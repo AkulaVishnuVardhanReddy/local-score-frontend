@@ -49,9 +49,9 @@ const RegistrationForm = () => {
   };
 
   const formFields = [
-    { label: "First Name", name: "firstName", type: "text", placeholder: "Enter First name" },
-    { label: "Last Name", name: "lastName", type: "text", placeholder: "Enter Last name" },
-    { label: "Email", name: "email", type: "email", placeholder: "Enter Email address" },
+    { label: "First Name", name: "firstName", type: "text", placeholder: "First name" },
+    { label: "Last Name", name: "lastName", type: "text", placeholder: "Last name" },
+    { label: "Email", name: "email", type: "email", placeholder: "Email address" },
     { label: "Password", name: "password", type: "password", placeholder: "Create Password" },
     { label: "Confirm Password", name: "confirmPassword", type: "password", placeholder: "Confirm Password" },
   ];

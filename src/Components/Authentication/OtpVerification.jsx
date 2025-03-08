@@ -7,61 +7,97 @@ const OtpVerification = () => {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [message, setMessage] = useState("");
   const [isLargeScreen, setIsLargeScreen] = useState(window.innerWidth >= 1024);
+  const [timer, setTimer] = useState(45); // Timer state
+  const [canResend, setCanResend] = useState(false); // Controls the visibility of the resend button
+  const [timerInterval, setTimerInterval] = useState(null); // Store the interval ID to clear when needed
 
   useEffect(() => {
+    // Set up media query listener
     const mediaQuery = window.matchMedia("(min-width: 1024px)");
     const handleResize = () => setIsLargeScreen(mediaQuery.matches);
-
     mediaQuery.addEventListener("change", handleResize);
-    return () => mediaQuery.removeEventListener("change", handleResize);
+
+    // Cleanup the media query listener
+    return () => {
+      mediaQuery.removeEventListener("change", handleResize);
+    };
   }, []);
 
-  // Handle OTP field change
+  const startTimer = () => {
+    setCanResend(false); // Disable resend button
+    setTimer(45); // Reset the timer to 45 seconds
+    // Clear any existing timer intervals to prevent multiple intervals running simultaneously
+    if (timerInterval) {
+      clearInterval(timerInterval);
+    }
+    // Start the countdown timer
+    const interval = setInterval(() => {
+      setTimer((prevTimer) => {
+        if (prevTimer <= 1) {
+          clearInterval(interval); // Stop the interval when timer reaches 0
+          setCanResend(true); // Enable resend button after timer reaches 0
+          return 0;
+        }
+        return prevTimer - 1;
+      });
+    }, 1000);
+
+    setTimerInterval(interval); // Store the interval ID to clear it later if needed
+  };
+
+  useEffect(() => {
+    // Start the timer when the component mounts
+    startTimer();
+
+    // Cleanup the interval when the component unmounts
+    return () => {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+      }
+    };
+  }, []); // Empty dependency array ensures this runs only once when the component mounts
+
   const handleChange = (e, index) => {
-    const value = e.target.value;
-
-    // Allow only numeric input and handle one character per field
-    if (/^[0-9]{0,1}$/.test(value)) {
-      const updatedOtp = [...otp];
-      updatedOtp[index] = value;
-      setOtp(updatedOtp);
-
-      // Move focus to the next field if filled
-      if (value && index < otp.length - 1) {
-        document.getElementById(`otp-input-${index + 1}`).focus();
-      }
+    const newOtp = [...otp];
+    newOtp[index] = e.target.value;
+    setOtp(newOtp);
+    
+    // Move to the next field automatically
+    if (e.target.value.length === 1 && index < 5) {
+      document.getElementById(`otp-field-${index + 1}`).focus();
     }
   };
 
-  // Handle keydown events for backspace or focus change
-  const handleKeyDown = (e, index) => {
+  const handleBackspace = (e, index) => {
     if (e.key === "Backspace" && otp[index] === "") {
-      // Focus the previous input if Backspace is pressed and the field is empty
       if (index > 0) {
-        document.getElementById(`otp-input-${index - 1}`).focus();
+        document.getElementById(`otp-field-${index - 1}`).focus();
       }
     }
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage(""); // Clear previous messages
-
-    const otpValue = otp.join("");
-    if (otpValue.length === 6) {
-      try {
-        const { data } = await axios.post("http://localhost:8080/api/verify-otp", { otp: otpValue });
-        setMessage("OTP Verified Successfully!");
-        console.log("Success:", data);
-      } catch (error) {
-        const errorMsg = error.response?.data?.message || "OTP verification failed! Try again.";
-        setMessage(errorMsg);
-        console.error("Error:", errorMsg);
-      }
-    } else {
-      setMessage("Please enter all 6 digits.");
+    const otpString = otp.join(""); // Join OTP array to a string for submission
+    try {
+      const { data } = await axios.post("http://localhost:8080/api/verify-otp", { otp: otpString });
+      setMessage("OTP Verified Successfully!");
+      console.log("Success:", data);
+    } catch (error) {
+      const errorMsg = error.response?.data?.message || "OTP verification failed! Try again.";
+      setMessage(errorMsg);
+      console.error("Error:", errorMsg);
     }
+  };
+
+  const handleResendOtp = () => {
+    // Call the API to resend OTP
+    console.log("Resend OTP");
+    // Reset OTP fields
+    setOtp(["", "", "", "", "", ""]);
+    // Restart the timer by calling startTimer function
+    startTimer();
   };
 
   return (
@@ -77,20 +113,18 @@ const OtpVerification = () => {
             Enter OTP
           </h3>
           <form className="w-full" onSubmit={handleSubmit}>
-            <div className="mb-4 flex justify-between">
-              {/* Render OTP input fields */}
+            <div className="mb-4 flex justify-between space-x-4">
               {otp.map((digit, index) => (
                 <input
                   key={index}
-                  id={`otp-input-${index}`}
+                  id={`otp-field-${index}`}
                   type="text"
+                  maxLength="1"
+                  placeholder="-"
                   value={digit}
                   onChange={(e) => handleChange(e, index)}
-                  onKeyDown={(e) => handleKeyDown(e, index)} // Add keydown listener for backspace
-                  className="w-12 h-12 text-center border border-gray-300 rounded-lg focus:outline-none focus:border-[#ae3c33] font-semibold text-xl"
-                  maxLength="1"
-                  autoComplete="one-time-code"
-                  placeholder="-"
+                  onKeyDown={(e) => handleBackspace(e, index)}
+                  className="w-12 h-12 text-center border border-gray-300 rounded-md focus:outline-none focus:border-[#ae3c33] text-xl font-semibold"
                 />
               ))}
             </div>
@@ -103,12 +137,27 @@ const OtpVerification = () => {
                 <span className="relative z-10">Verify</span>
               </button>
               {message && <p className="mt-4 text-center text-sm font-semibold text-red-600">{message}</p>}
-              <p className="mt-4 text-gray-700">
-                Didn’t receive an OTP?{" "}
-                <button className="font-semibold text-[#ae3c33] hover:underline" onClick={() => console.log("Resend OTP")}>
-                  Resend OTP
-                </button>
-              </p>
+              <div className="mt-6 flex items-center justify-center">
+                {!canResend && (
+                  <div className="timer-container flex items-center space-x-4">
+                    <p className="text-gray-700 text-lg font-semibold">You can request a new OTP in</p>
+                    <div className="timer-circle p-1 w-12 h-12 flex items-center justify-center rounded-full border-1 border-black text-black text-lg">
+                      {timer}
+                    </div>
+                  </div>
+                )}
+                {canResend && (
+                  <p className="mt-4 text-gray-700">
+                    Didn’t receive an OTP?{" "}
+                    <button
+                      className="font-semibold text-[#ae3c33] hover:underline"
+                      onClick={handleResendOtp}
+                    >
+                      Resend OTP
+                    </button>
+                  </p>
+                )}
+              </div>
             </div>
           </form>
         </div>
