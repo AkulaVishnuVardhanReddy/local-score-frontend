@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import bgImage from "../assets/bg-registration-form-2.jpg";
-import FormBg from "../assets/registration-form-2.png";
-import logo from "../assets/logo.png";
+import FormBg from "../../assets/registration-form-2.png";
+import logo from "../../assets/logo.png";
 import { Link } from "react-router-dom";
 
 const RegistrationForm = () => {

@@ -1,7 +1,8 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import RegistrationForm from "./Components/RegistrationForm";
-import LoginForm from "./Components/LoginForm";
-import HomeLayout from "./Components/HomeLayout";
+import RegistrationForm from "./Components/Authentication/RegistrationForm";
+import LoginForm from "./Components/Authentication/LoginForm";
+import HomeLayout from "./Components/Layouts/HomeLayout";
+import OtpVerification from "./Components/Authentication/OtpVerification";
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
           <Route index element={<LoginForm />} />
           <Route path="login" element={<LoginForm />} />
           <Route path="register" element={<RegistrationForm />} />
+          <Route path="verify-email" element={<OtpVerification />} />
         </Route>
       </Routes>
     </Router>

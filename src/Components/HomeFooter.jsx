@@ -7,9 +7,9 @@ import {
 } from "react-icons/fa";
 
 const socialLinks = [
-  { icon: FaTwitter, url: "https://x.com/akulavishnu30" },
-  { icon: FaInstagram, url: "https://www.instagram.com/vishnu_akula30" },
-  { icon: FaLinkedinIn, url: "https://www.linkedin.com/in/akulavishnuvardhanreddy/" },
+  { icon: FaTwitter, url: "https://x.com" },
+  { icon: FaInstagram, url: "https://www.instagram.com" },
+  { icon: FaLinkedinIn, url: "https://www.linkedin.com/in" },
   { icon: FaFacebookF, url: "https://www.facebook.com/" },
 ];
 
