@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
-import bgImage from "../assets/bg-registration-form-2.jpg";
-import FormBg from "../assets/registration-form-2.png";
-import logo from "../assets/logo.png";
+import FormBg from "../../assets/registration-form-2.png";
+import logo from "../../assets/logo.png";
 
 const LoginForm = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -59,6 +58,7 @@ const LoginForm = () => {
                 className="w-full h-10 px-4 border border-gray-300 rounded-full focus:outline-none focus:border-[#ae3c33]"
                 required
                 autoComplete="email"
+                placeholder="Enter your email"
               />
             </div>
             <div className="mb-4">
@@ -71,6 +71,7 @@ const LoginForm = () => {
                 className="w-full h-10 px-4 border border-gray-300 rounded-full focus:outline-none focus:border-[#ae3c33]"
                 required
                 autoComplete="current-password"
+                placeholder="Enter your password"
               />
             </div>
             <div className="flex flex-col items-center mt-6">
@@ -89,8 +90,6 @@ const LoginForm = () => {
                 </Link>
               </p>
             </div>
-
-            
           </form>
         </div>
       </div>

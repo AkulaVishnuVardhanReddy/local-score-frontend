@@ -49,17 +49,15 @@ const RegistrationForm = () => {
   };
 
   const formFields = [
-    { label: "First Name", name: "firstName", type: "text" },
-    { label: "Last Name", name: "lastName", type: "text" },
-    { label: "Email", name: "email", type: "email" },
-    { label: "Password", name: "password", type: "password" },
-    { label: "Confirm Password", name: "confirmPassword", type: "password" },
+    { label: "First Name", name: "firstName", type: "text", placeholder: "Enter First name" },
+    { label: "Last Name", name: "lastName", type: "text", placeholder: "Enter Last name" },
+    { label: "Email", name: "email", type: "email", placeholder: "Enter Email address" },
+    { label: "Password", name: "password", type: "password", placeholder: "Create Password" },
+    { label: "Confirm Password", name: "confirmPassword", type: "password", placeholder: "Confirm Password" },
   ];
 
   return (
-    <div
-      className="min-h-[90vh] flex items-center justify-center"
-    >
+    <div className="min-h-[90vh] flex items-center justify-center">
       <div
         className="relative w-full max-w-4xl lg:shadow-lg lg:rounded-lg overflow-hidden flex flex-col lg:flex-row"
         style={{
@@ -74,9 +72,8 @@ const RegistrationForm = () => {
             Registration Form
           </h3>
           <form className="w-full" onSubmit={handleSubmit}>
-            {/* Name Fields */}
             <div className="flex gap-4">
-              {formFields.slice(0, 2).map(({ label, name, type }) => (
+              {formFields.slice(0, 2).map(({ label, name, type, placeholder }) => (
                 <div className="w-full" key={name}>
                   <label className="block mb-2 text-gray-600">{label}</label>
                   <input
@@ -84,6 +81,7 @@ const RegistrationForm = () => {
                     name={name}
                     value={formData[name]}
                     onChange={handleChange}
+                    placeholder={placeholder}
                     className="w-full h-10 px-4 border border-gray-300 rounded-full focus:outline-none focus:border-[#ae3c33]"
                     required
                   />
@@ -91,7 +89,6 @@ const RegistrationForm = () => {
               ))}
             </div>
 
-            {/* Email Field */}
             <div className="mt-4">
               <label className="block mb-2 text-gray-600">Email</label>
               <input
@@ -99,14 +96,14 @@ const RegistrationForm = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
+                placeholder="Enter your email address"
                 className="w-full h-10 px-4 border border-gray-300 rounded-full focus:outline-none focus:border-[#ae3c33]"
                 required
               />
             </div>
 
-            {/* Password Fields */}
             <div className="flex gap-4 mt-4">
-              {formFields.slice(3).map(({ label, name, type }) => (
+              {formFields.slice(3).map(({ label, name, type, placeholder }) => (
                 <div className="w-full" key={name}>
                   <label className="block mb-2 text-gray-600">{label}</label>
                   <input
@@ -114,6 +111,7 @@ const RegistrationForm = () => {
                     name={name}
                     value={formData[name]}
                     onChange={handleChange}
+                    placeholder={placeholder}
                     className="w-full h-10 px-4 border border-gray-300 rounded-full focus:outline-none focus:border-[#ae3c33]"
                     required
                   />
@@ -121,7 +119,6 @@ const RegistrationForm = () => {
               ))}
             </div>
 
-            {/* Submit Button */}
             <div className="flex flex-col items-center mt-6">
               <button
                 type="submit"
@@ -131,17 +128,14 @@ const RegistrationForm = () => {
               </button>
 
               {message && (
-              <p className="mt-4 text-center text-sm font-semibold text-red-600">
-                {message}
-              </p>
-            )}
-              {/* Login Link */}
+                <p className="mt-4 text-center text-sm font-semibold text-red-600">
+                  {message}
+                </p>
+              )}
               <p className="mt-4">
-              Have an account? <Link to="/login" className="font-semibold text-[#ae3c33] hover:underline">Login</Link>
+                Have an account? <Link to="/login" className="font-semibold text-[#ae3c33] hover:underline">Login</Link>
               </p>
             </div>
-
-            
           </form>
         </div>
       </div>
