@@ -124,7 +124,7 @@ const RegistrationForm = () => {
                 type="submit"
                 className="w-40 h-10 bg-[#ae3c33] text-white rounded-full uppercase font-semibold transition duration-500 relative overflow-hidden flex items-center justify-center before:absolute before:inset-0 before:bg-[#f11a09] before:scale-x-0 before:origin-left before:transition-transform before:duration-500 hover:before:scale-x-100"
               >
-                <span className="relative z-10">Register</span>
+                <span className="relative z-10">Verify Email</span>
               </button>
 
               {message && (

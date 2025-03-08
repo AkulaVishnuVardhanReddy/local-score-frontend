@@ -81,6 +81,7 @@ const OtpVerification = () => {
     setMessage(""); // Clear previous messages
     const otpString = otp.join(""); // Join OTP array to a string for submission
     try {
+      console.log(otpString);
       const { data } = await axios.post("http://localhost:8080/api/verify-otp", { otp: otpString });
       setMessage("OTP Verified Successfully!");
       console.log("Success:", data);
