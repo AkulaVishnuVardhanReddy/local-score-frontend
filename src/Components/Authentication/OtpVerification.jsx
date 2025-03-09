@@ -61,7 +61,7 @@ const OtpVerification = () => {
     const newOtp = [...otp];
     newOtp[index] = e.target.value;
     setOtp(newOtp);
-    
+
     // Move to the next field automatically
     if (e.target.value.length === 1 && index < 5) {
       document.getElementById(`otp-field-${index + 1}`).focus();
@@ -82,11 +82,15 @@ const OtpVerification = () => {
     const otpString = otp.join(""); // Join OTP array to a string for submission
     try {
       console.log(otpString);
-      const { data } = await axios.post("http://localhost:8080/api/verify-otp", { otp: otpString });
+      const { data } = await axios.post(
+        "http://localhost:8080/api/verify-otp",
+        { otp: otpString }
+      );
       setMessage("OTP Verified Successfully!");
       console.log("Success:", data);
     } catch (error) {
-      const errorMsg = error.response?.data?.message || "OTP verification failed! Try again.";
+      const errorMsg =
+        error.response?.data?.message || "OTP verification failed! Try again.";
       setMessage(errorMsg);
       console.error("Error:", errorMsg);
     }
@@ -137,13 +141,46 @@ const OtpVerification = () => {
               >
                 <span className="relative z-10">Verify</span>
               </button>
-              {message && <p className="mt-4 text-center text-sm font-semibold text-red-600">{message}</p>}
+              {message && (
+                <p className="mt-4 text-center text-sm font-semibold text-red-600">
+                  {message}
+                </p>
+              )}
               <div className="mt-6 flex items-center justify-center">
                 {!canResend && (
                   <div className="timer-container flex items-center space-x-4">
-                    <p className="text-gray-700 text-lg font-semibold">You can request a new OTP in</p>
-                    <div className="timer-circle p-1 w-12 h-12 flex items-center justify-center rounded-full border-1 border-black text-black text-lg">
-                      {timer}
+                    <p className="text-gray-700 text-lg font-semibold">
+                      You can request a new OTP in
+                    </p>
+                    <div className="relative w-12 h-12">
+                      <svg
+                        className="absolute inset-0 w-full h-full"
+                        viewBox="0 0 40 40"
+                      >
+                        <circle
+                          cx="20"
+                          cy="20"
+                          r="18"
+                          stroke="#ae3c33"
+                          strokeWidth="3"
+                          fill="none"
+                        />
+                        <circle
+                          cx="20"
+                          cy="20"
+                          r="18"
+                          stroke="#d1d5db"
+                          strokeWidth="3"
+                          fill="none"
+                          strokeDasharray="113"
+                          strokeDashoffset={(113 * timer) / 45}
+                          strokeLinecap="round"
+                          className="transition-all duration-1000 ease-linear"
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center text-black text-lg font-semibold">
+                        {timer}
+                      </div>
                     </div>
                   </div>
                 )}

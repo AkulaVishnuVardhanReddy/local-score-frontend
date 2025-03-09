@@ -32,7 +32,7 @@ const HomeHeader = () => {
         <div className="flex items-center">
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden text-xl transition-transform duration-500 hover:text-[#ae3c33]" // Slower transition for button
+            className="lg:hidden text-xl transition-transform duration-500 hover:text-[#ae3c33]" // Slower transition for button
             onClick={toggleSidebar} // Toggle sidebar on click
           >
             <FaBars /> {/* Hamburger icon from React Icons */}
@@ -73,7 +73,7 @@ const HomeHeader = () => {
         </div>
 
         {/* Nav Links: Display only on medium and larger screens */}
-        <ul className="hidden md:flex space-x-8 font-semibold">
+        <ul className="hidden lg:flex space-x-8 font-semibold">
           {["Product", "Features", "Marketplace", "Company"].map((item, index) => (
             <li key={index}>
               <a
