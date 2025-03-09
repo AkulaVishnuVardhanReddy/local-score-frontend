@@ -4,6 +4,7 @@ import LoginForm from "./Components/Authentication/LoginForm";
 import HomeLayout from "./Components/Layouts/HomeLayout";
 import OtpVerification from "./Components/Authentication/OtpVerification";
 import HeroSection from "./Components/HeroSection";
+import PageNotFound from "./Components/PageNotFound";
 
 function App() {
   return (
@@ -15,7 +16,9 @@ function App() {
           <Route path="login" element={<LoginForm />} />
           <Route path="register" element={<RegistrationForm />} />
           <Route path="verify-email" element={<OtpVerification />} />
+          
         </Route>
+        <Route path="*" element={<PageNotFound />} />
       </Routes>
     </Router>
   );
