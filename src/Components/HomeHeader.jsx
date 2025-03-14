@@ -5,8 +5,8 @@ import bgImage from "../assets/bg-registration-form-2.jpg";
 
 const NAV_LINKS = [
   { name: "Home", path: "/" },
-  { name: "Features", path: "/features" },
-  { name: "Marketplace", path: "/marketplace" },
+  { name: "Matches", path: "/matches" },
+  { name: "Score Update", path: "/score-update" },
   { name: "Company", path: "/company" },
 ];
 

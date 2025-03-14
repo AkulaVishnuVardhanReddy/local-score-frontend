@@ -5,6 +5,8 @@ import HomeLayout from "./Components/Layouts/HomeLayout";
 import OtpVerification from "./Components/Authentication/OtpVerification";
 import HeroSection from "./Components/HeroSection";
 import PageNotFound from "./Components/PageNotFound";
+import Matches from "./Components/Feautures/Matches";
+import UpdateScore from "./Components/Feautures/UpdateScore";
 
 function App() {
   return (
@@ -16,7 +18,8 @@ function App() {
           <Route path="login" element={<LoginForm />} />
           <Route path="register" element={<RegistrationForm />} />
           <Route path="verify-email" element={<OtpVerification />} />
-          
+          <Route path="matches" element={<Matches />} />
+          <Route path="score-update" element={<UpdateScore />} />
         </Route>
         <Route path="*" element={<PageNotFound />} />
       </Routes>
