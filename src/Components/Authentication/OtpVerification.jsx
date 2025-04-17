@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import FormBg from "../../assets/registration-form-2.png";
 import logo from "../../assets/logo.png";
+import { useNavigate } from "react-router-dom";
 
 const OtpVerification = () => {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
@@ -10,6 +11,7 @@ const OtpVerification = () => {
   const [timer, setTimer] = useState(45); // Timer state
   const [canResend, setCanResend] = useState(false); // Controls the visibility of the resend button
   const [timerInterval, setTimerInterval] = useState(null); // Store the interval ID to clear when needed
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Set up media query listener
@@ -83,11 +85,11 @@ const OtpVerification = () => {
     try {
       console.log(otpString);
       const { data } = await axios.post(
-        "http://localhost:8080/api/verify-otp",
-        { otp: otpString }
+        `${process.env.API_URL}/verify-otp/${localStorage.getItem(email)}/${otpString}`
       );
       setMessage("OTP Verified Successfully!");
       console.log("Success:", data);
+      navigate("/");
     } catch (error) {
       const errorMsg =
         error.response?.data?.message || "OTP verification failed! Try again.";

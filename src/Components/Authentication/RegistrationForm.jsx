@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import FormBg from "../../assets/registration-form-2.png";
 import logo from "../../assets/logo.png";
+import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 
 const RegistrationForm = () => {
@@ -14,6 +15,7 @@ const RegistrationForm = () => {
   });
 
   const [message, setMessage] = useState("");
+  const navigate = useNavigate();
   const [isLargeScreen, setIsLargeScreen] = useState(
     window.matchMedia("(min-width: 1024px)").matches
   );
@@ -35,13 +37,16 @@ const RegistrationForm = () => {
       return;
     }
     try {
-      const response = await axios.post("http://localhost:8080/api/register", {
+      const response = await axios.post(`${process.env.API_URL}/register`, {
         fullName: `${formData.firstName} ${formData.lastName}`,
         email: formData.email,
         password: formData.password,
       });
       setMessage("Registration successful!");
       console.log("Success:", response.data);
+      localStorage.setItem(email,formData.email);
+      await axios.post(`${process.env.API_URL}/send-otp/${formData.email}`);
+      navigate("/verify-email");
     } catch (error) {
       setMessage("Registration failed! Try again.");
       console.error("Error:", error.response ? error.response.data : error);
@@ -52,8 +57,8 @@ const RegistrationForm = () => {
     { label: "First Name", name: "firstName", type: "text", placeholder: "First name" },
     { label: "Last Name", name: "lastName", type: "text", placeholder: "Last name" },
     { label: "Email", name: "email", type: "email", placeholder: "Email address" },
-    { label: "Password", name: "password", type: "password", placeholder: "Create Password" },
-    { label: "Confirm Password", name: "confirmPassword", type: "password", placeholder: "Confirm Password" },
+    { label: "Password", name: "password", type: "password", placeholder: "Create" },
+    { label: "Confirm Password", name: "confirmPassword", type: "password", placeholder: "Confirm" },
   ];
 
   return (
