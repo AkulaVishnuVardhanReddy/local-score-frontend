@@ -7,6 +7,9 @@ import HeroSection from "./Components/HeroSection";
 import PageNotFound from "./Components/PageNotFound";
 import Matches from "./Components/Feautures/Matches";
 import UpdateScore from "./Components/Feautures/UpdateScore";
+import CreateTeam from "./Components/Feautures/CreateTeam";
+import CreateMatch from "./Components/Feautures/CreateMatch";
+import ViewCreatedMatches from "./Components/Feautures/ViewCreatedMatches";
 
 function App() {
   return (
@@ -20,6 +23,9 @@ function App() {
           <Route path="verify-email" element={<OtpVerification />} />
           <Route path="matches" element={<Matches />} />
           <Route path="score-update" element={<UpdateScore />} />
+          <Route path="create-team" element={<CreateTeam />} />
+          <Route path="create-match" element={<CreateMatch />} />
+          <Route path="view-created-matches" element={<ViewCreatedMatches />} />
         </Route>
         <Route path="*" element={<PageNotFound />} />
       </Routes>

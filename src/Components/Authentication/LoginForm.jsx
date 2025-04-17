@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react"; // for password toggle icons
 import FormBg from "../../assets/registration-form-2.png";
 import logo from "../../assets/logo.png";
 
 const LoginForm = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [message, setMessage] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isLargeScreen, setIsLargeScreen] = useState(window.innerWidth >= 1024);
 
   useEffect(() => {
@@ -17,13 +19,14 @@ const LoginForm = () => {
     return () => mediaQuery.removeEventListener("change", handleResize);
   }, []);
 
-  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (e) =>
+    setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage(""); // Clear previous messages
+    setMessage("");
     try {
-      const { data } = await axios.post("http://localhost:8080/api/login", formData);
+      const { data } = await axios.post(`${process.env.API_URL}/login`, formData);
       setMessage("Login successful!");
       console.log("Success:", data);
     } catch (error) {
@@ -34,12 +37,10 @@ const LoginForm = () => {
   };
 
   return (
-    <div
-      className="min-h-[90vh] flex items-center justify-center bg-center"
-    >
+    <div className="min-h-[90vh] flex items-center justify-center bg-center">
       <div
         className={`relative w-full max-w-4xl lg:shadow-lg lg:rounded-lg overflow-hidden flex flex-col lg:flex-row min-h-[500px] 
-          ${isLargeScreen ? "bg-cover bg-center" : ""}`}
+        ${isLargeScreen ? "bg-cover bg-center" : ""}`}
         style={isLargeScreen ? { backgroundImage: `url(${FormBg})` } : {}}
       >
         <div className="flex flex-col items-center w-full p-10 lg:w-1/2 bg-opacity-70">
@@ -61,18 +62,25 @@ const LoginForm = () => {
                 placeholder="Enter your email"
               />
             </div>
-            <div className="mb-4">
+            <div className="mb-4 relative">
               <label className="block mb-2 text-gray-600">Password</label>
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full h-10 px-4 border border-gray-300 rounded-full focus:outline-none focus:border-[#ae3c33]"
+                className="w-full h-10 px-4 pr-10 border border-gray-300 rounded-full focus:outline-none focus:border-[#ae3c33]"
                 required
                 autoComplete="current-password"
                 placeholder="Enter your password"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute top-10.5 right-5 text-gray-600 hover:text-[#ae3c33] focus:outline-none"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
             </div>
             <div className="flex flex-col items-center mt-6">
               <button
@@ -82,7 +90,9 @@ const LoginForm = () => {
               >
                 <span className="relative z-10">Login</span>
               </button>
-              {message && <p className="mt-4 text-center text-sm font-semibold text-red-600">{message}</p>}
+              {message && (
+                <p className="mt-4 text-center text-sm font-semibold text-red-600">{message}</p>
+              )}
               <p className="mt-4 text-gray-700">
                 Don’t have an account?{" "}
                 <Link to="/register" className="font-semibold text-[#ae3c33] hover:underline">
