@@ -33,14 +33,14 @@ const RegistrationForm = () => {
       return;
     }
     try {
-      await axios.post(`${process.env.API_URL}/register`, {
-        fullName: `${formData.firstName} ${formData.lastName}`,
-        email: formData.email,
-        password: formData.password,
-      });
+      
       localStorage.setItem("email", formData.email);
-      await axios.post(`${import.meta.env.API_URL}/send-otp/${formData.email}`);
-      navigate("/verify-email");
+      const {data} = await axios.post(`${import.meta.env.VITE_API_URL}/api/send-otp?email=${formData.email}`);
+      console.log(data);
+      navigate("/verify-email", {
+        state: { fullName: `${formData.firstName} ${formData.lastName}`, 
+        email: formData.email, password: formData.password },
+      });
     } catch (error) {
       setMessage("Registration failed! Try again.");
       console.error("Error:", error.response?.data || error);

@@ -3,6 +3,7 @@ import axios from "axios";
 import FormBg from "../../assets/registration-form-2.png";
 import logo from "../../assets/logo.png";
 import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 const OtpVerification = () => {
   const [otp, setOtp] = useState(Array(6).fill(""));
@@ -12,6 +13,8 @@ const OtpVerification = () => {
   const [canResend, setCanResend] = useState(false);
   const intervalRef = useRef(null);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { fullName, email, password } = location.state || {};
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(min-width: 1024px)");
@@ -60,16 +63,19 @@ const OtpVerification = () => {
     const otpString = otp.join("");
     setMessage("");
     try {
-      const { data } = await axios.post(
-        `${import.meta.env.API_URL}/verify-otp/${localStorage.getItem("email")}/${otpString}`
-      );
+      const { response } =await axios.post(`${import.meta.env.VITE_API_URL}/auth/signup`, {
+        fullName,
+        email,
+        password,
+        otp: otpString
+      });
+      
       setMessage("OTP Verified Successfully!");
       console.log("Success:", data);
       navigate("/view-created-matches");
     } catch (error) {
-      const msg = error.response?.data?.message || "OTP verification failed! Try again.";
-      setMessage(msg);
-      console.error("Error:", msg);
+      setMessage(error?.response?.data);
+      console.error("Error:", error);
     }
   };
 

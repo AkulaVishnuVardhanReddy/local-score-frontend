@@ -26,8 +26,12 @@ const LoginForm = () => {
     e.preventDefault();
     setMessage("");
     try {
-      const { data } = await axios.post(`${import.meta.env.API_URL}/login`, formData);
+      const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/auth/signin`, {
+        username: formData.email,
+        password: formData.password
+      });
       console.log("Success:", data);
+      localStorage.setItem("token","Bearer "+data);
       setMessage("Login successful!");
       navigate("/view-created-matches");
     } catch (err) {
