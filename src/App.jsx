@@ -10,6 +10,7 @@ import UpdateScore from "./Components/Feautures/UpdateScore";
 import CreateTeam from "./Components/Feautures/CreateTeam";
 import CreateMatch from "./Components/Feautures/CreateMatch";
 import ViewCreatedMatches from "./Components/Feautures/ViewCreatedMatches";
+import CreateTournament from "./Components/Feautures/CreateTournament";
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
           <Route path="create-team" element={<CreateTeam />} />
           <Route path="create-match" element={<CreateMatch />} />
           <Route path="view-created-matches" element={<ViewCreatedMatches />} />
+          <Route path="create-tournament" element={<CreateTournament />} />
         </Route>
         <Route path="*" element={<PageNotFound />} />
       </Routes>

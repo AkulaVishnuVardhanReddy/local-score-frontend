@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { MapPin } from "lucide-react";
-import heroBg from "../assets/hero_bg.jpg"; // Ensure the correct path is correct
+import heroBg from "../assets/hero_bg.jpg"; // Ensure the path is correct
 
 const HeroSection = () => {
+  const navigate = useNavigate();
   const [isLargeScreen, setIsLargeScreen] = useState(window.innerWidth >= 1024);
+  const [location, setLocation] = useState("");
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(min-width: 1024px)");
@@ -12,6 +15,15 @@ const HeroSection = () => {
     mediaQuery.addEventListener("change", handleResize);
     return () => mediaQuery.removeEventListener("change", handleResize);
   }, []);
+
+  const handleSeeMatches = () => {
+    if (location.trim() !== "") {
+      localStorage.setItem("matchLocation", location.trim());
+      navigate("/matches");
+    } else {
+      alert("Please enter a location.");
+    }
+  };
 
   return (
     <div>
@@ -38,18 +50,21 @@ const HeroSection = () => {
             </p>
 
             <div className="flex items-center bg-white border border-gray-300 rounded-full overflow-hidden shadow-md focus-within:shadow-lg transition-all duration-300 max-w-[450px] min-h-[45px]">
-              {/* Icon inside Input */}
               <div className="relative flex items-center flex-grow">
                 <MapPin className="absolute left-4 text-gray-400" size={18} />
                 <input
                   type="text"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
                   placeholder="Enter Location"
                   className="w-full pl-10 pr-2 py-2 text-sm text-gray-700 border-none focus:outline-none focus:ring-0"
                 />
               </div>
 
-              {/* Button */}
-              <button className="ml-auto flex items-center min-h-[45px] space-x-1 bg-[#ae3c33] text-white px-4 py-2 font-medium rounded-full hover:bg-[#911f1b] transition-all duration-300 transform hover:scale-105">
+              <button
+                onClick={handleSeeMatches}
+                className="ml-auto flex items-center min-h-[45px] space-x-1 bg-[#ae3c33] text-white px-4 py-2 font-medium rounded-full hover:bg-[#911f1b] transition-all duration-300 transform hover:scale-105"
+              >
                 <span className="text-sm">See Matches</span>
               </button>
             </div>
@@ -61,3 +76,4 @@ const HeroSection = () => {
 };
 
 export default HeroSection;
+ 

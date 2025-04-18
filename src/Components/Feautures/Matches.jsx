@@ -2,7 +2,9 @@ import React, { useState } from "react";
 import { MapPin, Calendar, Trophy, Flag } from "lucide-react";
 
 const Matches = () => {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(() => {
+    return localStorage.getItem("matchLocation") || "";
+  });  
   const matches = [
     {
       name: "Final • ICC Champions Trophy, 2025",

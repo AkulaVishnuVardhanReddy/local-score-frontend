@@ -1,120 +1,149 @@
 import { useState } from "react";
+import { motion } from "framer-motion";
+import toast, { Toaster } from "react-hot-toast";
 
-const CreateMatch = () => {
-  const [match, setMatch] = useState({
+export default function CreateMatch() {
+  const [form, setForm] = useState({
     name: "",
     matchDate: "",
     totalOvers: "",
-    tournamentId: "1", // Hardcoded for now
-    team1: "Team A", // Hardcoded for now
-    team2: "Team B", // Hardcoded for now
-    addressId: "101", // Hardcoded for now
+    targetRuns: "",
+    targetOvers: "",
+    superOver: "",
+    tossDecision: "",
+    matchStatus: "",
+    tournamentId: "",
+    playerOfMatchId: "",
+    tossWinnerId: "",
+    matchWinnerId: "",
+    team1Id: "",
+    team2Id: "",
+    ownerId: "",
+    addressId: "",
   });
-
-  // Hardcoded tournament, teams, and address suggestions
-  const tournaments = [
-    { id: "1", name: "IPL 2025" },
-    { id: "2", name: "World Cup 2025" },
-  ];
-
-  const teams = [
-    { id: "T1", name: "Team A" },
-    { id: "T2", name: "Team B" },
-    { id: "T3", name: "Team C" },
-  ];
-
-  const addresses = [
-    { id: "101", name: "Eden Gardens, Kolkata" },
-    { id: "102", name: "Wankhede Stadium, Mumbai" },
-  ];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setMatch((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Match Created:", match);
-    // API call can be added later
+  const handleSubmit = () => {
+    console.log("Match Created:", form);
+
+    toast.success("🏏 Match created successfully!", {
+      style: {
+        borderRadius: "10px",
+        background: "#ae3c33",
+        color: "#fff",
+        fontWeight: "bold",
+      },
+    });
+
+    setForm({
+      name: "",
+      matchDate: "",
+      totalOvers: "",
+      targetRuns: "",
+      targetOvers: "",
+      superOver: "",
+      tossDecision: "",
+      matchStatus: "",
+      tournamentId: "",
+      playerOfMatchId: "",
+      tossWinnerId: "",
+      matchWinnerId: "",
+      team1Id: "",
+      team2Id: "",
+      ownerId: "",
+      addressId: "",
+    });
   };
+
+  const tossDecisions = ["BAT", "BOWL"];
+  const matchStatuses = ["SCHEDULED", "ONGOING", "COMPLETED"];
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="bg-white shadow-lg rounded-xl p-8 w-full max-w-lg">
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
-          ⚡ Create a New Match
-        </h2>
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label className="label">Match Name</label>
-            <input type="text" name="name" placeholder="Enter match name" className="input" onChange={handleChange} />
-          </div>
+    <div className="min-h-screen flex items-center justify-center bg-white px-4 py-10">
+      <Toaster />
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="bg-white shadow-2xl border border-gray-100 p-10 rounded-3xl max-w-4xl w-full space-y-6"
+      >
+        <h1 className="text-3xl font-bold text-center text-black mb-4">Create Match</h1>
 
-          <div>
-            <label className="label">Match Date</label>
-            <input type="date" name="matchDate" className="input" onChange={handleChange} />
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {[
+            { label: "Match Name", name: "name", type: "text" },
+            { label: "Match Date", name: "matchDate", type: "date" },
+            { label: "Total Overs", name: "totalOvers", type: "number" },
+            { label: "Target Runs", name: "targetRuns", type: "number" },
+            { label: "Target Overs", name: "targetOvers", type: "number" },
+            { label: "Super Over", name: "superOver", type: "number" },
+            { label: "Tournament ID", name: "tournamentId", type: "number" },
+            { label: "Player of Match ID", name: "playerOfMatchId", type: "number" },
+            { label: "Toss Winner ID", name: "tossWinnerId", type: "number" },
+            { label: "Match Winner ID", name: "matchWinnerId", type: "number" },
+            { label: "Team 1 ID", name: "team1Id", type: "number" },
+            { label: "Team 2 ID", name: "team2Id", type: "number" },
+            { label: "Owner ID", name: "ownerId", type: "number" },
+            { label: "Address ID", name: "addressId", type: "number" },
+          ].map((field) => (
+            <div key={field.name}>
+              <label className="block text-gray-600 mb-1 font-medium">{field.label}</label>
+              <input
+                type={field.type}
+                name={field.name}
+                value={form[field.name]}
+                onChange={handleChange}
+                className="w-full px-4 py-2 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#ae3c33] shadow-sm transition-all"
+              />
+            </div>
+          ))}
 
+          {/* Toss Decision Dropdown */}
           <div>
-            <label className="label">Total Overs</label>
-            <input type="number" name="totalOvers" placeholder="Enter total overs" className="input" onChange={handleChange} />
-          </div>
-
-          <div>
-            <label className="label">Select Tournament</label>
-            <select name="tournamentId" className="input" onChange={handleChange}>
-              {tournaments.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
-                </option>
+            <label className="block text-gray-600 mb-1 font-medium">Toss Decision</label>
+            <select
+              name="tossDecision"
+              value={form.tossDecision}
+              onChange={handleChange}
+              className="w-full px-4 py-2 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#ae3c33] shadow-sm"
+            >
+              <option value="">Select Decision</option>
+              {tossDecisions.map((option) => (
+                <option key={option}>{option}</option>
               ))}
             </select>
           </div>
 
+          {/* Match Status Dropdown */}
           <div>
-            <label className="label">Team 1</label>
-            <select name="team1" className="input" onChange={handleChange}>
-              {teams.map((t) => (
-                <option key={t.id} value={t.name}>
-                  {t.name}
-                </option>
+            <label className="block text-gray-600 mb-1 font-medium">Match Status</label>
+            <select
+              name="matchStatus"
+              value={form.matchStatus}
+              onChange={handleChange}
+              className="w-full px-4 py-2 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#ae3c33] shadow-sm"
+            >
+              <option value="">Select Status</option>
+              {matchStatuses.map((status) => (
+                <option key={status}>{status}</option>
               ))}
             </select>
           </div>
+        </div>
 
-          <div>
-            <label className="label">Team 2</label>
-            <select name="team2" className="input" onChange={handleChange}>
-              {teams.map((t) => (
-                <option key={t.id} value={t.name}>
-                  {t.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="label">Match Location</label>
-            <select name="addressId" className="input" onChange={handleChange}>
-              {addresses.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <button type="submit" className="btn-primary">
-            🚀 Create Match
-          </button>
-        </form>
-      </div>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={handleSubmit}
+          className="w-full mt-6 bg-[#ae3c33] hover:bg-red-700 text-white font-bold py-3 rounded-xl shadow-md transition-all duration-300"
+        >
+          Create Match
+        </motion.button>
+      </motion.div>
     </div>
   );
-};
-
-export default CreateMatch;
+}
