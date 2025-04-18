@@ -7,18 +7,10 @@ export default function CreateMatch() {
     name: "",
     matchDate: "",
     totalOvers: "",
-    targetRuns: "",
-    targetOvers: "",
-    superOver: "",
     tossDecision: "",
-    matchStatus: "",
     tournamentId: "",
-    playerOfMatchId: "",
-    tossWinnerId: "",
-    matchWinnerId: "",
     team1Id: "",
     team2Id: "",
-    ownerId: "",
     addressId: "",
   });
 

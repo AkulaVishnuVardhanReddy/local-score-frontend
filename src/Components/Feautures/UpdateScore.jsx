@@ -8,6 +8,10 @@ const UpdateScore = ({ isCreator }) => {
   const [selectedRuns, setSelectedRuns] = useState(null);
   const [isInningsOver, setIsInningsOver] = useState(false);
 
+  const [showTossModal, setShowTossModal] = useState(true);
+  const [tossWinner, setTossWinner] = useState("");
+  const [decision, setDecision] = useState("");
+
   const updateOvers = (currentOvers) => {
     const oversInt = Math.floor(currentOvers);
     const oversDecimal = (currentOvers * 10) % 10;
@@ -27,7 +31,7 @@ const UpdateScore = ({ isCreator }) => {
 
   const updateScore = (runs) => {
     if (isInningsOver) return;
-    setPrevScore(score); // Save previous state for undo
+    setPrevScore(score);
 
     const updatedOvers = updateOvers(score.overs);
     const updated = {
@@ -59,27 +63,76 @@ const UpdateScore = ({ isCreator }) => {
       setScore(prevScore);
       setPrevScore(null);
       setSelectedRuns(null);
-      setIsInningsOver(false); // Allow updates again after undo
+      setIsInningsOver(false);
     }
   };
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-[#faf5f5] to-[#ffe9e9] flex flex-col md:flex-row font-sans">
+    <div className="min-h-screen w-full bg-gradient-to-br from-pink-100 to-red-100 flex flex-col md:flex-row font-sans">
+      {/* Toss Modal */}
+      {showTossModal && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center">
+          <div className="bg-white p-8 rounded-2xl shadow-xl w-11/12 max-w-md">
+            <h2 className="text-2xl font-bold text-red-600 mb-4 text-center">Toss Details</h2>
+            <div className="mb-4">
+              <label className="block font-medium mb-1">Toss Winner</label>
+              <input
+                type="text"
+                value={tossWinner}
+                onChange={(e) => setTossWinner(e.target.value)}
+                className="w-full border rounded-md px-3 py-2"
+                placeholder="Enter team name"
+              />
+            </div>
+            <div className="mb-6">
+              <label className="block font-medium mb-1">Decision</label>
+              <select
+                value={decision}
+                onChange={(e) => setDecision(e.target.value)}
+                className="w-full border rounded-md px-3 py-2"
+              >
+                <option value="">Select</option>
+                <option value="bat">Bat</option>
+                <option value="bowl">Bowl</option>
+              </select>
+            </div>
+            <button
+              onClick={() => {
+                if (tossWinner && decision) {
+                  setShowTossModal(false);
+                }
+              }}
+              className="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-md font-semibold"
+            >
+              Submit
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Scoreboard */}
-      <div className="md:w-1/2 w-full p-10 flex flex-col justify-center items-center bg-white shadow-xl rounded-r-3xl transition-all duration-500">
+      <div className="md:w-1/2 w-full p-10 flex flex-col justify-center items-center bg-white shadow-2xl rounded-r-3xl">
         <div className="text-center w-full max-w-sm">
-          <h1 className="text-4xl font-extrabold text-[#ae3c33] mb-2 tracking-wide transition-all">
+          <h1 className="text-4xl font-extrabold text-red-600 mb-2 tracking-wide animate-bounce">
             🏏 Match Centre
           </h1>
           <h3 className="text-2xl font-semibold text-gray-800">PHOENIX XI</h3>
-          <p className="text-sm text-gray-500 mb-4">2nd Innings</p>
-          <div className="text-7xl font-extrabold text-[#ae3c33] my-4 transition-all duration-300">
+          <p className="text-sm text-gray-500 mb-1">2nd Innings</p>
+
+          {/* Optional: Toss Info */}
+          {tossWinner && decision && (
+            <p className="text-sm text-gray-600 mb-2">
+              Toss: <span className="font-semibold">{tossWinner}</span> chose to{" "}
+              <span className="font-semibold">{decision}</span> first.
+            </p>
+          )}
+
+          <div className="text-7xl font-extrabold text-red-700 my-4">
             {score.runs}-{score.wickets}
           </div>
           <p className="text-base text-gray-700 mb-1">Overs: {score.overs}/20</p>
           <p className="text-base text-gray-700 mb-2">CRR: 10.5</p>
-          
-          <div className="mt-8 grid grid-cols-3 gap-4 rounded-xl p-4 text-sm font-medium">
+          <div className="mt-8 grid grid-cols-3 gap-4 rounded-xl p-4 text-sm font-medium bg-red-50 border border-red-200 shadow-sm">
             <div className="text-center">🏏 Runs: {score.runs}</div>
             <div className="text-center">❌ Wickets: {score.wickets}</div>
             <div className="text-center">⚡ Overs: {score.overs}</div>
@@ -88,13 +141,10 @@ const UpdateScore = ({ isCreator }) => {
       </div>
 
       {/* Update Panel */}
-      <div className="md:w-1/2 w-full p-10 flex flex-col justify-center items-center transition-all bg-[#fff0f0]">
+      <div className="md:w-1/2 w-full p-10 flex flex-col justify-center items-center bg-pink-50">
         {!isCreator ? (
-          <div className="w-full max-w-md">
-            <h2 className="text-3xl font-bold text-[#ae3c33] mb-6 text-center transition-all">
-              Update the Score
-            </h2>
-
+          <div className="w-full max-w-md bg-white p-6 rounded-2xl shadow-lg">
+            <h2 className="text-3xl font-bold text-red-600 mb-6 text-center">Update the Score</h2>
             <div className="grid grid-cols-6 gap-3 mb-8">
               {[1, 2, 3, 4, 6, 0].map((runs) => (
                 <button
@@ -102,8 +152,8 @@ const UpdateScore = ({ isCreator }) => {
                   onClick={() => updateScore(runs)}
                   className={`py-2 rounded-xl font-semibold transition-all duration-300 text-lg shadow-md ${
                     selectedRuns === runs
-                      ? "bg-[#ae3c33] text-white scale-105"
-                      : "bg-white border border-gray-300 text-gray-700 hover:bg-[#f6dede] hover:scale-105"
+                      ? "bg-red-600 text-white scale-105"
+                      : "bg-white border border-gray-300 text-gray-700 hover:bg-red-100 hover:scale-105"
                   }`}
                 >
                   {runs}
@@ -128,7 +178,7 @@ const UpdateScore = ({ isCreator }) => {
 
             {isInningsOver && (
               <p className="text-center text-sm text-green-700 font-medium">
-                Innings over!
+                ✅ Innings over!
               </p>
             )}
 

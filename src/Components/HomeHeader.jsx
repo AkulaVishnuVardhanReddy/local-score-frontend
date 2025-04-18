@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, NavLink } from "react-router-dom";
-import { FaBars, FaTimes } from "react-icons/fa";
+import { FaBars, FaTimes, FaUserCircle } from "react-icons/fa";
 import bgImage from "../assets/bg-registration-form-2.jpg";
+import { FaChevronDown } from "react-icons/fa";
 
 const NAV_LINKS = [
   { name: "Home", path: "/" },
@@ -12,12 +13,17 @@ const NAV_LINKS = [
 
 const HomeHeader = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const sidebarRef = useRef(null);
+  const profileRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (sidebarRef.current && !sidebarRef.current.contains(e.target)) {
         setIsSidebarOpen(false);
+      }
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setIsDropdownOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -45,7 +51,9 @@ const HomeHeader = () => {
               <NavLink
                 to={path}
                 className={({ isActive }) =>
-                  `relative px-3 py-1 text-lg transition-all duration-300 before:absolute before:-bottom-1 before:left-0 before:w-0 before:h-[2px] before:bg-[#ae3c33] before:rounded-full before:transition-all before:duration-300 hover:before:w-full hover:text-[#ae3c33] ${isActive ? "text-[#ae3c33] before:w-full" : ""}`
+                  `relative px-3 py-1 text-lg transition-all duration-300 before:absolute before:-bottom-1 before:left-0 before:w-0 before:h-[2px] before:bg-[#ae3c33] before:rounded-full before:transition-all before:duration-300 hover:before:w-full hover:text-[#ae3c33] ${
+                    isActive ? "text-[#ae3c33] before:w-full" : ""
+                  }`
                 }
               >
                 {name}
@@ -54,13 +62,48 @@ const HomeHeader = () => {
           ))}
         </ul>
 
-        {/* Login Button */}
-        <Link
-          to="/login"
-          className="w-28 h-10 bg-[#ae3c33] text-white rounded-full font-semibold transition duration-500 relative overflow-hidden flex items-center justify-center before:absolute before:inset-0 before:bg-[#f11a09] before:scale-x-0 before:origin-left before:transition-transform before:duration-500 hover:before:scale-x-100"
-        >
-          <span className="relative z-10">Login →</span>
-        </Link>
+        {/* Login or Profile Dropdown */}
+        {localStorage.getItem("auth") ? (
+          <div className="relative" ref={profileRef}>
+            <button
+              onClick={() => setIsDropdownOpen((prev) => !prev)}
+              className="flex items-center gap-2 font-semibold focus:outline-none"
+            >
+              <FaUserCircle className="text-2xl" />
+              <span>Vishnu</span>
+              <FaChevronDown className="text-sm mt-1" /> {/* Down arrow */}
+            </button>
+
+            {isDropdownOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-md py-2 z-50">
+                <Link
+                  to="/change-player"
+                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  onClick={() => setIsDropdownOpen(false)}
+                >
+                  Change as Player
+                </Link>
+                <button
+                  onClick={() => {
+                    localStorage.removeItem("auth");
+                    setIsDropdownOpen(false);
+                    window.location.href = "/login";
+                  }}
+                  className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <Link
+            to="/login"
+            className="w-28 h-10 bg-[#ae3c33] text-white rounded-full font-semibold transition duration-500 relative overflow-hidden flex items-center justify-center before:absolute before:inset-0 before:bg-[#f11a09] before:scale-x-0 before:origin-left before:transition-transform before:duration-500 hover:before:scale-x-100"
+          >
+            <span className="relative z-10">Login →</span>
+          </Link>
+        )}
       </div>
 
       {/* Sidebar (Mobile) */}
@@ -86,7 +129,9 @@ const HomeHeader = () => {
               <NavLink
                 to={path}
                 className={({ isActive }) =>
-                  `text-lg hover:text-[#ae3c33] hover:underline px-3 py-2 rounded-md transition duration-300 ease-in-out ${isActive ? "text-[#ae3c33] underline" : ""}`
+                  `text-lg hover:text-[#ae3c33] hover:underline px-3 py-2 rounded-md transition duration-300 ease-in-out ${
+                    isActive ? "text-[#ae3c33] underline" : ""
+                  }`
                 }
                 onClick={() => setIsSidebarOpen(false)}
               >
