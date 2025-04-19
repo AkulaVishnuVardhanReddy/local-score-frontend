@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { FaBars, FaTimes, FaUserCircle, FaChevronDown } from "react-icons/fa";
 import bgImage from "../assets/bg-registration-form-2.jpg";
-
+import axios from "axios";
 const NAV_LINKS = [
   { name: "Home", path: "/" },
   { name: "Matches", path: "/matches" },
@@ -38,6 +38,31 @@ const HomeHeader = () => {
       clearInterval(checkToken);
     };
   }, []);
+
+  const handleChangeToPlayer = async () => {
+    try {
+      const email = localStorage.getItem("email");
+      const { data } = await axios.post(
+        `${import.meta.env.VITE_API_URL}/players/create/${localStorage.getItem("id")}`,
+        {
+          name: localStorage.getItem("name"),
+          user: {
+            userId: localStorage.getItem("id"),
+          },
+        },
+        {
+          headers: {
+            Authorization: `${localStorage.getItem("token")}`, // Assuming the token is stored as 'token'
+          },
+        }
+      );
+      alert("You have changed to player");
+      setIsDropdownOpen(false);
+    } catch (error) {
+      console.error("Error changing role:", error);
+      alert("You are already a player");
+    }
+  };
 
   const navLinkClasses = ({ isActive }) =>
     `relative px-3 py-1 text-lg transition-all duration-300 before:absolute before:-bottom-1 before:left-0 before:w-0 before:h-[2px] before:bg-[#ae3c33] before:rounded-full before:transition-all before:duration-300 hover:before:w-full hover:text-[#ae3c33] ${
@@ -79,23 +104,24 @@ const HomeHeader = () => {
               className="flex items-center gap-2 font-semibold focus:outline-none"
             >
               <FaUserCircle className="text-xl" />
-              <span>Vishnu</span>
+              <span>{localStorage.getItem("name")?.split(" ")[0]}</span>
               <FaChevronDown className="text-sm mt-1" />
             </button>
 
             {isDropdownOpen && (
               <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-md py-2 z-50">
-                <Link
-                  to="/change-player"
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  onClick={() => setIsDropdownOpen(false)}
+                <button
+                  onClick={handleChangeToPlayer}
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
                   Change as Player
-                </Link>
+                </button>
                 <button
                   onClick={() => {
                     localStorage.removeItem("token");
                     localStorage.removeItem("email");
+                    localStorage.removeItem("id");
+                    localStorage.removeItem("name");
                     setIsDropdownOpen(false);
                     setIsLoggedIn(false);
                     window.location.href = "/login";

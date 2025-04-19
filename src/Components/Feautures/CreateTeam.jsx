@@ -1,25 +1,32 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import toast, { Toaster } from "react-hot-toast";
+import axios from "axios";
 
 export default function CreateTeam() {
   const [teamName, setTeamName] = useState("");
   const [search, setSearch] = useState("");
   const [selectedPlayers, setSelectedPlayers] = useState([]);
   const [highlightIndex, setHighlightIndex] = useState(-1);
+  const [playerData, setPlayerData] = useState([]);
 
-  const playerData = [
-    { id: 1, name: "Virat Kohli" },
-    { id: 2, name: "MS Dhoni" },
-    { id: 3, name: "Rohit Sharma" },
-    { id: 4, name: "Jasprit Bumrah" },
-    { id: 5, name: "Hardik Pandya" },
-    { id: 6, name: "Suryakumar Yadav" },
-    { id: 7, name: "Shubman Gill" },
-    { id: 8, name: "Ravindra Jadeja" },
-    { id: 9, name: "KL Rahul" },
-    { id: 10, name: "Mohammed Shami" },
-  ];
+  // Fetch players using axios
+  useEffect(() => {
+    axios.get("http://localhost:8080/api/get-all-players")
+      .then((response) => {
+        if (response.data && response.data.data) {
+          const formattedPlayers = response.data.data.map((player) => ({
+            id: player.id,
+            name: player.name,
+          }));
+          setPlayerData(formattedPlayers);
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching players:", error);
+        toast.error("Failed to fetch players.");
+      });
+  }, []);
 
   const availablePlayers = playerData.filter(
     (player) => !selectedPlayers.some((p) => p.id === player.id)
@@ -56,22 +63,27 @@ export default function CreateTeam() {
       teamName,
       playerIds,
     };
+    console.log(requestBody);
 
-    console.log("Submitting:", requestBody);
-
-    toast.success("Team created successfully!", {
-      style: {
-        borderRadius: "10px",
-        color: "#000",
-      },
-      iconTheme: {
-        primary: "#fff",
-        secondary: "#ae3c33",
-      },
-    });
-
-    setTeamName("");
-    setSelectedPlayers([]);
+    axios.post("http://localhost:8080/api/teams/create", requestBody)
+      .then(() => {
+        toast.success("Team created successfully!", {
+          style: {
+            borderRadius: "10px",
+            color: "#000",
+          },
+          iconTheme: {
+            primary: "#fff",
+            secondary: "#ae3c33",
+          },
+        });
+        setTeamName("");
+        setSelectedPlayers([]);
+      })
+      .catch((error) => {
+        console.error("Error creating team:", error);
+        toast.error("Failed to create team.");
+      });
   };
 
   return (

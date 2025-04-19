@@ -30,7 +30,10 @@ const LoginForm = () => {
         username: formData.email,
         password: formData.password
       });
-      console.log("Success:", data);
+      const id = await axios.get(`${import.meta.env.VITE_API_URL}/auth/get-id-by-email?email=${formData.email}`);
+      localStorage.setItem("id",id.data.userId);
+      localStorage.setItem("name",id.data.fullName);
+      localStorage.setItem("email",formData.email);
       localStorage.setItem("token","Bearer "+data);
       setMessage("Login successful!");
       navigate("/view-created-matches");
