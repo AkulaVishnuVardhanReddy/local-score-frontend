@@ -12,7 +12,7 @@ export default function CreateTeam() {
 
   // Fetch players using axios
   useEffect(() => {
-    axios.get("http://localhost:8080/api/get-all-players")
+    axios.get(`${import.meta.env.VITE_API_URL}/api/get-all-players`)
       .then((response) => {
         if (response.data && response.data.data) {
           const formattedPlayers = response.data.data.map((player) => ({
@@ -65,7 +65,7 @@ export default function CreateTeam() {
     };
     console.log(requestBody);
 
-    axios.post("http://localhost:8080/api/teams/create", requestBody)
+    axios.post(`${import.meta.env.VITE_API_URL}/api/teams/create`, requestBody)
       .then(() => {
         toast.success("Team created successfully!", {
           style: {

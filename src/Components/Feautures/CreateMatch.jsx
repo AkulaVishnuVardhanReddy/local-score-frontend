@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import toast, { Toaster } from "react-hot-toast";
+import logo from "../../assets/logo.png";
 
 export default function CreateMatch() {
   const [form, setForm] = useState({
@@ -13,48 +14,87 @@ export default function CreateMatch() {
     team1Name: "",
     team2Name: "",
     addressName: "",
+    team1NameSuggestions: [],
+    team2NameSuggestions: [],
+    addressSuggestions: [],
   });
 
-  // Hardcoded data for teams and addresses
-  const teams = [
-    { id: 1, name: "Team A" },
-    { id: 2, name: "Team B" },
-    { id: 3, name: "Team C" },
-    { id: 4, name: "Team D" },
-  ];
+  const [teams, setTeams] = useState([]);
+  const [addresses, setAddresses] = useState([]);
 
-  const addresses = [
-    { id: 1, name: "Stadium 1" },
-    { id: 2, name: "Stadium 2" },
-    { id: 3, name: "Stadium 3" },
-    { id: 4, name: "Stadium 4" },
-  ];
+  useEffect(() => {
+    const fetchTeams = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/get-all-teams`);
+        const data = await response.json();
+        if (data.message === "All teams fetched") {
+          const teamsData = data.data.map((team) => ({
+            id: team.id,
+            name: team.name,
+          }));
+          setTeams(teamsData);
+        }
+      } catch (error) {
+        console.error("Error fetching teams:", error);
+        toast.error("Failed to load teams");
+      }
+    };
+
+    const fetchAddresses = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/address/all`);
+        const data = await response.json();
+        if (data?.data && Array.isArray(data.data)) {
+          const addressesData = data.data.map((address) => ({
+            id: address.id,
+            name: address.address2,
+          }));
+          setAddresses(addressesData);
+        } else {
+          toast.error("Failed to load addresses: Invalid response format");
+        }
+      } catch (error) {
+        console.error("Error fetching addresses:", error);
+        toast.error("Failed to load addresses");
+      }
+    };
+
+    fetchTeams();
+    fetchAddresses();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
 
-    // Show suggestions when typing for team or address fields
     if (name === "team1Name" || name === "team2Name") {
-      const teamsFiltered = teams.filter((team) =>
+      const filteredTeams = teams.filter((team) =>
         team.name.toLowerCase().includes(value.toLowerCase())
       );
-      setForm((prev) => ({ ...prev, [`${name}Suggestions`]: teamsFiltered }));
+      setForm((prev) => ({
+        ...prev,
+        [`${name}Suggestions`]: filteredTeams,
+      }));
     }
+
     if (name === "addressName") {
-      const addressesFiltered = addresses.filter((address) =>
+      const filteredAddresses = addresses.filter((address) =>
         address.name.toLowerCase().includes(value.toLowerCase())
       );
-      setForm((prev) => ({ ...prev, addressSuggestions: addressesFiltered }));
+      setForm((prev) => ({
+        ...prev,
+        addressSuggestions: filteredAddresses,
+      }));
     }
   };
 
-  const handleSelectTeam = (teamId, teamName, teamField) => {
+  const handleSelectTeam = (teamId, teamName, teamFieldName) => {
+    const idField = teamFieldName === "team1Name" ? "team1Id" : "team2Id";
     setForm((prev) => ({
       ...prev,
-      [teamField]: teamName,
-      [`${teamField}Id`]: teamId,
-      [`${teamField}Suggestions`]: [],
+      [teamFieldName]: teamName,
+      [idField]: teamId,
+      [`${teamFieldName}Suggestions`]: [],
     }));
   };
 
@@ -62,49 +102,46 @@ export default function CreateMatch() {
     setForm((prev) => ({
       ...prev,
       addressName,
-      addressId: addressId,
+      addressId,
       addressSuggestions: [],
     }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    const { name, matchDate, totalOvers, team1Id, team2Id, addressId } = form;
+
+    if (!name || !matchDate || !totalOvers || !team1Id || !team2Id || !addressId) {
+      toast.error("Please fill all required fields");
+      return;
+    }
+
     const matchPayload = {
-      name: form.name,
-      matchDate: form.matchDate,
-      totalOvers: Number(form.totalOvers),
-      teamEntity1: { id: Number(form.team1Id) },
-      teamEntity2: { id: Number(form.team2Id) },
-      addressEntity: { id: Number(form.addressId) },
-      tossDecision: null,
-      matchStatus: null,
-      tournamentEntity: null,
-      tossWinner: null,
-      matchWinner: null,
-      owner: null,
+      name,
+      matchDate: new Date(matchDate).toISOString(),
+      totalOvers: Number(totalOvers),
+      team1Id,
+      team2Id,
+      addressId,
+      ownerId: Number(localStorage.getItem("id")),
     };
 
-    console.log("Submitting Match:", matchPayload);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/matches`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(matchPayload),
+      });
 
-    toast.success("🏏 Match created successfully!", {
-      style: {
-        borderRadius: "10px",
-        background: "#ae3c33",
-        color: "#fff",
-        fontWeight: "bold",
-      },
-    });
+      if (!response.ok) throw new Error("Failed to create match");
 
-    setForm({
-      name: "",
-      matchDate: "",
-      totalOvers: "",
-      team1Id: "",
-      team2Id: "",
-      addressId: "",
-      team1Name: "",
-      team2Name: "",
-      addressName: "",
-    });
+      toast.success("🏏 Match created successfully!");
+      // Optionally reset form here
+    } catch (err) {
+      console.error("Error submitting match:", err);
+      toast.error("Error submitting match");
+    }
   };
 
   return (
@@ -116,20 +153,14 @@ export default function CreateMatch() {
         transition={{ duration: 0.5 }}
         className="bg-white shadow-xl border border-gray-100 p-12 rounded-3xl max-w-3xl w-full space-y-6"
       >
-        {/* Logo */}
         <div className="flex justify-center mb-6">
-          <img
-            src="/local-score-logo.png"
-            alt="Local Score Logo"
-            className="h-20 mb-4"
-          />
+          <img src={logo} alt="Local Score Logo" className="h-30 mb-4" />
         </div>
 
         <h1 className="text-3xl font-semibold text-center text-black mb-4">Create Match</h1>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {[
-            { label: "Match Name", name: "name", type: "text" },
+          {[{ label: "Match Name", name: "name", type: "text" },
             { label: "Match Date", name: "matchDate", type: "date" },
             { label: "Total Overs", name: "totalOvers", type: "number" },
           ].map((field) => (
@@ -140,99 +171,78 @@ export default function CreateMatch() {
                 name={field.name}
                 value={form[field.name]}
                 onChange={handleChange}
-                className="w-full px-4 py-2 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#ae3c33] shadow-sm transition-all"
+                className="w-full px-4 py-2 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#ae3c33] shadow-sm"
               />
             </div>
           ))}
 
           {/* Team 1 */}
-          <div className="relative">
-            <label className="block text-gray-700 mb-1 font-medium">Team 1</label>
-            <input
-              type="text"
-              name="team1Name"
-              value={form.team1Name}
-              onChange={handleChange}
-              className="w-full px-4 py-2 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#ae3c33] shadow-sm"
-              placeholder="Start typing team name"
-            />
-            {form.team1NameSuggestions && (
-              <ul className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-300 rounded-xl shadow-lg max-h-40 overflow-auto z-10">
-                {form.team1NameSuggestions.map((team) => (
-                  <li
-                    key={team.id}
-                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                    onClick={() => handleSelectTeam(team.id, team.name, "team1Name")}
-                  >
-                    {team.name}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+          <AutoSuggestInput
+            label="Team 1"
+            name="team1Name"
+            value={form.team1Name}
+            suggestions={form.team1NameSuggestions}
+            onChange={handleChange}
+            onSelect={(id, name) => handleSelectTeam(id, name, "team1Name")}
+          />
 
           {/* Team 2 */}
-          <div className="relative">
-            <label className="block text-gray-700 mb-1 font-medium">Team 2</label>
-            <input
-              type="text"
-              name="team2Name"
-              value={form.team2Name}
-              onChange={handleChange}
-              className="w-full px-4 py-2 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#ae3c33] shadow-sm"
-              placeholder="Start typing team name"
-            />
-            {form.team2NameSuggestions && (
-              <ul className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-300 rounded-xl shadow-lg max-h-40 overflow-auto z-10">
-                {form.team2NameSuggestions.map((team) => (
-                  <li
-                    key={team.id}
-                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                    onClick={() => handleSelectTeam(team.id, team.name, "team2Name")}
-                  >
-                    {team.name}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+          <AutoSuggestInput
+            label="Team 2"
+            name="team2Name"
+            value={form.team2Name}
+            suggestions={form.team2NameSuggestions}
+            onChange={handleChange}
+            onSelect={(id, name) => handleSelectTeam(id, name, "team2Name")}
+          />
 
           {/* Address */}
-          <div className="relative">
-            <label className="block text-gray-700 mb-1 font-medium">Address</label>
-            <input
-              type="text"
-              name="addressName"
-              value={form.addressName}
-              onChange={handleChange}
-              className="w-full px-4 py-2 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#ae3c33] shadow-sm"
-              placeholder="Start typing address"
-            />
-            {form.addressSuggestions && (
-              <ul className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-300 rounded-xl shadow-lg max-h-40 overflow-auto z-10">
-                {form.addressSuggestions.map((address) => (
-                  <li
-                    key={address.id}
-                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                    onClick={() => handleSelectAddress(address.id, address.name)}
-                  >
-                    {address.name}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+          <AutoSuggestInput
+            label="Address"
+            name="addressName"
+            value={form.addressName}
+            suggestions={form.addressSuggestions}
+            onChange={handleChange}
+            onSelect={(id, name) => handleSelectAddress(id, name)}
+          />
         </div>
 
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+        <button
           onClick={handleSubmit}
-          className="w-full mt-6 bg-[#ae3c33] hover:bg-red-700 text-white font-semibold py-3 rounded-xl shadow-md transition-all duration-300"
+          className="w-full bg-[#ae3c33] text-white py-3 px-4 rounded-xl mt-6 font-semibold"
         >
           Create Match
-        </motion.button>
+        </button>
       </motion.div>
+    </div>
+  );
+}
+
+function AutoSuggestInput({ label, name, value, suggestions, onChange, onSelect }) {
+  return (
+    <div className="relative">
+      <label className="block text-gray-700 mb-1 font-medium">{label}</label>
+      <input
+        type="text"
+        name={name}
+        value={value}
+        onChange={onChange}
+        className="w-full px-4 py-2 rounded-xl border"
+        placeholder={`Start typing ${label.toLowerCase()}`}
+      />
+      {suggestions.length > 0 && (
+        <ul className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-300 rounded-xl shadow-lg max-h-40 overflow-auto z-10">
+          {suggestions.map((item) => (
+            <li
+              key={item.id}
+              className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+              onClick={() => onSelect(item.id, item.name)}
+            >
+              {item.name}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
