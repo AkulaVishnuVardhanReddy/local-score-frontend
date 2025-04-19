@@ -1,41 +1,24 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const ViewCreatedMatches = () => {
   const navigate = useNavigate();
+  const [matches, setMatches] = useState([]);
 
-  const [matches, setMatches] = useState([
-    {
-      id: 1,
-      title: 'India vs Australia',
-      addressEntity: {
-        name: 'Wankhede Stadium',
-        status: 'Available',
-      },
-      matchDate: '2025-04-17T15:00:00',
-      status: 'Upcoming',
-    },
-    {
-      id: 2,
-      title: 'England vs South Africa',
-      addressEntity: {
-        name: 'Lord’s',
-        status: 'Booked',
-      },
-      matchDate: '2025-04-19T19:30:00',
-      status: 'Live',
-    },
-    {
-      id: 3,
-      title: 'Pakistan vs Sri Lanka',
-      addressEntity: {
-        name: 'Gaddafi Stadium',
-        status: 'Closed',
-      },
-      matchDate: '2025-04-20T18:00:00',
-      status: 'Completed',
-    },
-  ]);
+  useEffect(() => {
+    const fetchMatches = async () => {
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/matches/user/${localStorage.getItem("id")}`);
+        const fetchedMatches = response.data.data;
+        setMatches(fetchedMatches);
+      } catch (error) {
+        console.error('Failed to fetch matches:', error);
+      }
+    };
+
+    fetchMatches();
+  }, []);
 
   const handleUpdateScore = (matchId) => {
     navigate(`/update-score/${matchId}`);
@@ -63,7 +46,7 @@ const ViewCreatedMatches = () => {
           <p className="text-lg font-semibold text-[#ae3c33]">Create New Match</p>
         </div>
 
-        {/* Existing Matches */}
+        {/* Render Matches from API */}
         {matches.map((match, index) => {
           const dateObj = new Date(match.matchDate);
           const date = dateObj.toLocaleDateString();
@@ -76,13 +59,13 @@ const ViewCreatedMatches = () => {
               style={{ animation: `fadeIn 0.5s ease-in ${index * 0.1}s` }}
             >
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-xl font-bold text-[#ae3c33]">{match.title}</h2>
+                <h2 className="text-xl font-bold text-[#ae3c33]">{match.team1Name} vs {match.team2Name}</h2>
                 <span className="text-xs font-semibold px-3 py-1 rounded-full bg-gray-100 text-gray-600">
-                  {match.addressEntity.status}
+                  {match.totalOvers+" Overs" || 'Unknown'}
                 </span>
               </div>
               <p className="text-sm text-gray-700 mb-1">
-                <span className="font-medium">Venue:</span> {match.addressEntity.name}
+                <span className="font-medium">Venue:</span> {match.address2}
               </p>
               <p className="text-sm text-gray-700 mb-1">
                 <span className="font-medium">Date:</span> {date}
@@ -94,17 +77,17 @@ const ViewCreatedMatches = () => {
               <div className="flex justify-between items-center">
                 <span
                   className={`text-xs font-medium px-3 py-1 rounded-full
-                  ${match.status === 'Live'
+                    ${match.matchStatus === 'Live'
                       ? 'bg-green-100 text-green-700'
-                      : match.status === 'Upcoming'
+                      : match.matchStatus === 'SCHEDULED'
                       ? 'bg-yellow-100 text-yellow-700'
                       : 'bg-gray-200 text-gray-700'
                     }`}
                 >
-                  {match.status}
+                  {match.matchStatus || 'Status Pending'}
                 </span>
 
-                {match.status !== 'Completed' && (
+                {match.matchStatus !== 'Completed' && (
                   <button
                     onClick={() => handleUpdateScore(match.id)}
                     className="bg-[#ae3c33] text-white text-xs px-4 py-2 rounded-lg font-semibold hover:bg-[#912c27] transition-all duration-300"
