@@ -23,7 +23,7 @@ function App() {
           <Route path="register" element={<RegistrationForm />} />
           <Route path="verify-email" element={<OtpVerification />} />
           <Route path="matches" element={<Matches />} />
-          <Route path="score-update" element={<UpdateScore />} />
+          <Route path="score-update/:matchId" element={<UpdateScore />} />
           <Route path="create-team" element={<CreateTeam />} />
           <Route path="create-match" element={<CreateMatch />} />
           <Route path="view-created-matches" element={<ViewCreatedMatches />} />

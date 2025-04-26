@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import toast, { Toaster } from "react-hot-toast";
 import logo from "../../assets/logo.png";
+import { Navigate, useNavigate } from "react-router-dom";
 
 export default function CreateMatch() {
   const [form, setForm] = useState({
@@ -22,6 +23,7 @@ export default function CreateMatch() {
 
   const [teams, setTeams] = useState([]);
   const [addresses, setAddresses] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchTeams = async () => {
@@ -143,8 +145,10 @@ export default function CreateMatch() {
       });
 
       if (!response.ok) throw new Error("Failed to create match");
+      
 
       toast.success("🏏 Match created successfully!");
+      navigate("/view-created-matches");
     } catch (err) {
       console.error("Error submitting match:", err);
       toast.error("Error submitting match");

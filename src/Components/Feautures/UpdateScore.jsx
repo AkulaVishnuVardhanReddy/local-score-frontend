@@ -1,45 +1,63 @@
-import React, { useState } from "react";
-import { XCircle, RotateCcw } from "lucide-react";
+import React, { useState, useEffect, useCallback } from "react";
+import { RotateCcw } from "lucide-react";
+import { useParams } from "react-router-dom";
+import axios from "axios";
+
+// Initial fields setup
+const initialMatchFields = {
+  id: "",
+  team1Score: "",
+  team1wickets: "",
+  team1Overs: "",
+  team2Score: "",
+  team2wickets: "",
+  team2Overs: "",
+  name: "",
+  matchDate: "",
+  totalOvers: "",
+  tossDecision: "",
+  matchStatus: "",
+  tournamentEntity: null,
+  tossWinner: null,
+  matchWinner: null,
+  teamEntity1: { id: "", name: "" },
+  teamEntity2: { id: "", name: "" },
+  addressEntity: { address2: "" },
+};
 
 const UpdateScore = ({ isCreator }) => {
-  const initialScore = { runs: 70, wickets: 1, overs: 6.4 };
-  const [score, setScore] = useState(initialScore);
   const [prevScore, setPrevScore] = useState(null);
-  const [selectedRuns, setSelectedRuns] = useState(null);
   const [isInningsOver, setIsInningsOver] = useState(false);
+  const [fields, setFields] = useState(initialMatchFields);
+  const [score, setScore] = useState({ runs: 0, wickets: 0, overs: 0 });
+  const [selectedRuns, setSelectedRuns] = useState(null);
+  const { matchId } = useParams();
 
-  const [showTossModal, setShowTossModal] = useState(true);
-  const [tossWinner, setTossWinner] = useState("");
-  const [decision, setDecision] = useState("");
-
-  const updateOvers = (currentOvers) => {
+  const updateOvers = useCallback((currentOvers) => {
     const oversInt = Math.floor(currentOvers);
     const oversDecimal = (currentOvers * 10) % 10;
-
-    if (oversDecimal < 5) {
-      return parseFloat((oversInt + (oversDecimal + 1) / 10).toFixed(1));
-    } else {
-      return parseFloat((oversInt + 1).toFixed(1));
-    }
-  };
+    return oversDecimal < 5
+      ? parseFloat((oversInt + (oversDecimal + 1) / 10).toFixed(1))
+      : parseFloat((oversInt + 1).toFixed(1));
+  }, []);
 
   const checkInningsOver = (updatedScore) => {
-    if (updatedScore.wickets >= 11 || updatedScore.overs >= 20.0) {
+    if (
+      updatedScore.wickets >= 11 ||
+      updatedScore.overs >= Number(fields.totalOvers)
+    ) {
       setIsInningsOver(true);
     }
   };
 
   const updateScore = (runs) => {
     if (isInningsOver) return;
-    setPrevScore(score);
-
     const updatedOvers = updateOvers(score.overs);
     const updated = {
       runs: score.runs + runs,
       wickets: score.wickets,
       overs: updatedOvers,
     };
-
     setScore(updated);
     setSelectedRuns(runs);
     checkInningsOver(updated);
@@ -47,13 +65,7 @@ const UpdateScore = ({ isCreator }) => {
 
   const addWicket = () => {
     if (isInningsOver || score.wickets >= 11) return;
-    setPrevScore(score);
-
-    const updated = {
-      ...score,
-      wickets: score.wickets + 1,
-    };
-
+    const updated = { ...score, wickets: score.wickets + 1 };
     setScore(updated);
     checkInningsOver(updated);
   };
@@ -67,130 +79,213 @@ const UpdateScore = ({ isCreator }) => {
     }
   };
 
+  const handleFieldChange = (e) => {
+    const { name, value, type } = e.target;
+    setFields((prev) => ({
+      ...prev,
+      [name]: type === "number" && value !== "" ? Number(value) : value,
+    }));
+  };
+
+  const fetchMatchDetails = useCallback(async () => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/matches/${matchId}`);
+      const res = await response.json();
+      if (res?.data) {
+        const m = res.data;
+        setFields({
+          ...initialMatchFields,
+          ...m,
+          matchDate: m.matchDate ? m.matchDate.split("T")[0] : "",
+          teamEntity1: { ...initialMatchFields.teamEntity1, ...m.teamEntity1 },
+          teamEntity2: { ...initialMatchFields.teamEntity2, ...m.teamEntity2 },
+          addressEntity: {
+            ...initialMatchFields.addressEntity,
+            ...m.addressEntity,
+          },
+        });
+      }
+    } catch (err) {
+      console.error("Failed to fetch match:", err);
+    }
+  }, []);
+
+  const teamOptions = [
+    { id: fields.teamEntity1.id, name: fields.teamEntity1.name, value: fields.teamEntity1.id },
+    { id: fields.teamEntity2.id, name: fields.teamEntity2.name, value: fields.teamEntity2.id },
+  ];
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const updatedFields = { ...fields };
+    const currentTeam =
+      fields.inningBy == fields.teamEntity1.name ? "team1" : "team2";
+    updatedFields[`${currentTeam}Score`] = score.runs;
+    updatedFields[`${currentTeam}wickets`] = score.wickets;
+    updatedFields[`${currentTeam}Overs`] = score.overs;
+
+    try {
+      const response = await axios.put(
+        "http://localhost:8080/match/1",
+        updatedFields,
+        {
+          headers: {
+            Authorization: `${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      console.log("Response from server:", response.data);
+      setScore({ runs: 0, wickets: 0, overs: 0 });
+      fetchMatchDetails();
+    } catch (error) {
+      console.error("Error submitting match details:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchMatchDetails();
+  }, [fetchMatchDetails]);
+
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-pink-100 to-red-100 flex flex-col md:flex-row font-sans">
-      {/* Toss Modal */}
-      {showTossModal && (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center">
-          <div className="bg-white p-8 rounded-2xl shadow-xl w-11/12 max-w-md">
-            <h2 className="text-2xl font-bold text-red-600 mb-4 text-center">Toss Details</h2>
-            <div className="mb-4">
-              <label className="block font-medium mb-1">Toss Winner</label>
-              <input
-                type="text"
-                value={tossWinner}
-                onChange={(e) => setTossWinner(e.target.value)}
-                className="w-full border rounded-md px-3 py-2"
-                placeholder="Enter team name"
-              />
-            </div>
-            <div className="mb-6">
-              <label className="block font-medium mb-1">Decision</label>
-              <select
-                value={decision}
-                onChange={(e) => setDecision(e.target.value)}
-                className="w-full border rounded-md px-3 py-2"
-              >
-                <option value="">Select</option>
-                <option value="bat">Bat</option>
-                <option value="bowl">Bowl</option>
-              </select>
-            </div>
-            <button
-              onClick={() => {
-                if (tossWinner && decision) {
-                  setShowTossModal(false);
-                }
-              }}
-              className="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-md font-semibold"
-            >
-              Submit
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Scoreboard */}
       <div className="md:w-1/2 w-full p-10 flex flex-col justify-center items-center bg-white shadow-2xl rounded-r-3xl">
-        <div className="text-center w-full max-w-sm">
-          <h1 className="text-4xl font-extrabold text-red-600 mb-2 tracking-wide animate-bounce">
-            🏏 Match Centre
+        <div className="text-center w-full max-w-sm transition duration-500 ease-in-out">
+          <h1 className="text-4xl font-extrabold text-red-700 mb-2">
+            {fields.name}
           </h1>
-          <h3 className="text-2xl font-semibold text-gray-800">PHOENIX XI</h3>
-          <p className="text-sm text-gray-500 mb-1">2nd Innings</p>
-
-          {/* Optional: Toss Info */}
-          {tossWinner && decision && (
+          <h3 className="text-2xl font-semibold text-gray-800">
+            {
+              teamOptions.find((team) => team.id === parseInt(fields.inningBy))
+                ?.name
+            }
+          </h3>
+          {fields.tossWinner && fields.tossDecision && (
             <p className="text-sm text-gray-600 mb-2">
-              Toss: <span className="font-semibold">{tossWinner}</span> chose to{" "}
-              <span className="font-semibold">{decision}</span> first.
+              Toss:{" "}
+              <span className="font-semibold">
+                {
+                  fields.tossWinner
+                }
+              </span>{" "}
+              choose to{" "}
+              <span className="font-semibold">{fields.tossDecision}</span>{" "}
+              first.
             </p>
           )}
 
-          <div className="text-7xl font-extrabold text-red-700 my-4">
+          <div className="text-7xl font-extrabold text-red-700 my-4 transition-all duration-300 hover:scale-110">
             {score.runs}-{score.wickets}
           </div>
-          <p className="text-base text-gray-700 mb-1">Overs: {score.overs}/20</p>
-          <p className="text-base text-gray-700 mb-2">CRR: 10.5</p>
-          <div className="mt-8 grid grid-cols-3 gap-4 rounded-xl p-4 text-sm font-medium bg-red-50 border border-red-200 shadow-sm">
-            <div className="text-center">🏏 Runs: {score.runs}</div>
-            <div className="text-center">❌ Wickets: {score.wickets}</div>
-            <div className="text-center">⚡ Overs: {score.overs}</div>
+          <p className="text-base text-gray-700 mb-1">
+            Overs: {score.overs}/{fields.totalOvers}
+          </p>
+          <p className="text-base text-gray-700 mb-2">
+            Match Status:{" "}
+            <span className="font-bold">{fields.matchStatus}</span>
+          </p>
+
+          <div className="mt-6 space-y-2 text-sm text-left bg-red-50 p-4 rounded-xl border border-red-200 shadow-sm transition duration-300 ease-in-out hover:shadow-md">
+            <p>
+              <strong>Match Date:</strong> {fields.matchDate || "Not Set"}
+            </p>
+            <p>
+              <strong>Total Overs:</strong> {fields.totalOvers}
+            </p>
+            <p>
+              <strong>{fields.teamEntity1.name}:</strong>{" "}
+              {fields.team1Score || 0} / {fields.team1wickets || 0} (
+              {fields.team1Overs})
+            </p>
+            <p>
+              <strong>{fields.teamEntity2.name}:</strong>{" "}
+              {fields.team2Score || 0} / {fields.team2wickets || 0} (
+              {fields.team2Overs})
+            </p>
+          </div>
+
+          <div className="flex gap-2 mt-6 justify-center flex-wrap">
+            {[0, 1, 2, 3, 4, 6].map((run) => (
+              <button
+                key={run}
+                onClick={() => updateScore(run)}
+                className="bg-red-500 hover:bg-red-600 transition transform hover:scale-105 text-white px-4 py-2 rounded-md shadow"
+              >
+                +{run}
+              </button>
+            ))}
+            <button
+              onClick={addWicket}
+              className="bg-yellow-500 hover:bg-yellow-600 transition transform hover:scale-105 text-white px-4 py-2 rounded-md shadow"
+            >
+              Wicket
+            </button>
+            <button
+              onClick={undo}
+              className="bg-gray-400 hover:bg-gray-500 transition transform hover:rotate-12 text-white px-3 py-2 rounded-full"
+              title="Undo"
+            >
+              <RotateCcw className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Update Panel */}
       <div className="md:w-1/2 w-full p-10 flex flex-col justify-center items-center bg-pink-50">
-        {!isCreator ? (
-          <div className="w-full max-w-md bg-white p-6 rounded-2xl shadow-lg">
-            <h2 className="text-3xl font-bold text-red-600 mb-6 text-center">Update the Score</h2>
-            <div className="grid grid-cols-6 gap-3 mb-8">
-              {[1, 2, 3, 4, 6, 0].map((runs) => (
-                <button
-                  key={runs}
-                  onClick={() => updateScore(runs)}
-                  className={`py-2 rounded-xl font-semibold transition-all duration-300 text-lg shadow-md ${
-                    selectedRuns === runs
-                      ? "bg-red-600 text-white scale-105"
-                      : "bg-white border border-gray-300 text-gray-700 hover:bg-red-100 hover:scale-105"
-                  }`}
-                >
-                  {runs}
-                </button>
-              ))}
-            </div>
-
-            <div className="flex gap-4 mb-5">
-              <button
-                onClick={addWicket}
-                className="w-1/2 bg-red-500 hover:bg-red-600 text-white py-3 px-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 font-semibold"
+        <form
+          onSubmit={handleSubmit}
+          className="w-full max-w-md p-8 rounded-2xl bg-white shadow-xl space-y-5 animate-fade-in"
+        >
+          <h2 className="text-3xl font-bold text-red-600 text-center mb-4">
+            🎯 Update Match Info
+          </h2>
+          {[
+            { label: "Toss Winner", name: "tossWinner", options: teamOptions },
+            {
+              label: "Toss Decision",
+              name: "tossDecision",
+              options: [
+                { id: "BAT", name: "BAT" },
+                { id: "BOWL", name: "BOWL" },
+              ],
+            },
+            {
+              label: "Match Status",
+              name: "matchStatus",
+              options: [
+                { id: "SCHEDULED", name: "Scheduled" },
+                { id: "ONGOING", name: "Ongoing" },
+                { id: "COMPLETED", name: "Completed" },
+                { id: "ABANDONED", name: "Abandoned" },
+              ],
+            },
+            { label: "Inning By", name: "inningBy", options: teamOptions },
+          ].map(({ label, name, options }) => (
+            <div key={name} className="transition-all duration-300">
+              <label className="block text-gray-700 font-semibold mb-1">
+                {label}
+              </label>
+              <select
+                name={name}
+                value={ fields[name]}
+                onChange={handleFieldChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent transition duration-300 ease-in-out"
               >
-                <XCircle size={18} /> Wicket
-              </button>
-              <button
-                onClick={undo}
-                className="w-1/2 bg-gray-600 hover:bg-gray-700 text-white py-3 px-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 font-semibold"
-              >
-                <RotateCcw size={18} /> Undo
-              </button>
+                <option value="">Select {label}</option>
+                {options.map((opt) => (
+                  <option key={opt.id} value={opt.name}>
+                    {opt.name}
+                  </option> // Send 'id' as value here
+                ))}
+              </select>
             </div>
-
-            {isInningsOver && (
-              <p className="text-center text-sm text-green-700 font-medium">
-                ✅ Innings over!
-              </p>
-            )}
-
-            <p className="text-center text-sm text-red-600 font-medium">
-              Only the match creator can update the score.
-            </p>
-          </div>
-        ) : (
-          <p className="text-center text-lg font-semibold text-gray-500">
-            You are the match creator. Waiting for live updates...
-          </p>
-        )}
+          ))}
+          <button
+            type="submit"
+            className="w-full py-2 bg-red-600 text-white font-semibold rounded-md hover:bg-red-700 hover:shadow-lg transform hover:scale-105 transition-all duration-300"
+          >
+            Update Match
+          </button>
+        </form>
       </div>
     </div>
   );

@@ -21,7 +21,7 @@ const ViewCreatedMatches = () => {
   }, []);
 
   const handleUpdateScore = (matchId) => {
-    navigate(`/update-score/${matchId}`);
+    navigate(`/score-update/${matchId}`);
   };
 
   const handleCreateMatch = () => {
