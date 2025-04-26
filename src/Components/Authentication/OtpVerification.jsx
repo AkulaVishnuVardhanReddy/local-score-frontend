@@ -72,7 +72,7 @@ const OtpVerification = () => {
       
       setMessage("OTP Verified Successfully!");
       console.log("Success:", data);
-      navigate("/view-created-matches");
+      navigate("/login");
     } catch (error) {
       setMessage(error?.response?.data);
       console.error("Error:", error);

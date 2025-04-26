@@ -1,57 +1,40 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { MapPin, Calendar, Trophy, Flag } from "lucide-react";
 
 const Matches = () => {
   const [searchQuery, setSearchQuery] = useState(() => {
     return localStorage.getItem("matchLocation") || "";
-  });  
-  const matches = [
-    {
-      name: "Final • ICC Champions Trophy, 2025",
-      matchDate: "March 14, 2025",
-      totalOvers: 50,
-      targetRuns: 252,
-      targetOvers: 50,
-      superOver: false,
-      tossDecision: "BAT",
-      matchStatus: "ONGOING",
-      tournament: "ICC Champions Trophy 2025",
-      team1: { name: "NZ", score: "251-7 (50)", flag: "🇳🇿" },
-      team2: { name: "IND", score: "220-5 (40)", flag: "🇮🇳" },
-      tossWinner: "NZ",
-      matchWinner: null,
-      playerOfMatch: null,
-      location: "Eden Gardens, Kolkata",
-    },
-    {
-      name: "1st Test • The Ashes, 2025",
-      matchDate: "March 12, 2025",
-      totalOvers: 90,
-      targetRuns: null,
-      targetOvers: null,
-      superOver: false,
-      tossDecision: "BOWL",
-      matchStatus: "SCHEDULED",
-      tournament: "The Ashes 2025",
-      team1: { name: "AUS", flag: "🇦🇺" },
-      team2: { name: "ENG", flag: "🏴" },
-      tossWinner: "ENG",
-      matchWinner: null,
-      playerOfMatch: null,
-      location: "Lord’s, London",
-    },
-  ];
+  });
+
+  const [matchesData, setMatchesData] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(`http://localhost:8080/api/matches`);
+        const res = await response.json();
+        if (res?.data) {
+          setMatchesData(res?.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch matches:", err);
+      }
+    };
+    fetchData();
+  }, []);
 
   const categories = ["ALL", "ONGOING", "SCHEDULED", "COMPLETED", "ABANDONED"];
   const [selectedCategory, setSelectedCategory] = useState("ALL");
 
-  const filteredMatches = matches.filter(
+  const filteredMatches = matchesData.filter(
     (match) =>
       (selectedCategory === "ALL" || match.matchStatus === selectedCategory) &&
-      (match.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        match.team1.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        match.team2.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        match.tournament.toLowerCase().includes(searchQuery.toLowerCase()))
+      (
+        match.addressEntity?.address2?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        match.teamEntity1?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        match.teamEntity2?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        match.tournament?.toLowerCase().includes(searchQuery.toLowerCase())
+      )
   );
 
   return (
@@ -92,14 +75,14 @@ const Matches = () => {
       {/* Matches Grid */}
       <div className="w-full max-w-6xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredMatches.length > 0 ? (
-          filteredMatches.map((match, index) => (
+          filteredMatches.map((match) => (
             <div
-              key={index}
+              key={match.id || match.name} // Prefer unique id if available
               className="bg-white shadow-lg rounded-lg p-5 transition-transform duration-300 transform hover:-translate-y-2 border-l-4 border-[#ae3c33]"
             >
               <div className="flex justify-between items-center mb-2">
                 <span className="text-xs font-semibold text-gray-500">
-                  {match.tournament}
+                  {match.name}
                 </span>
                 <span className="text-xs bg-[#ae3c33] text-white px-2 py-1 rounded">
                   {match.totalOvers ? `${match.totalOvers} Overs` : "Test Match"}
@@ -108,16 +91,16 @@ const Matches = () => {
 
               <div className="text-lg font-semibold text-gray-800">
                 <div className="flex justify-between items-center">
-                  <span>
-                    {match.team1.flag} {match.team1.name}
+                  <span>{match.teamEntity1?.name}</span>
+                  <span className="text-gray-700">
+                    {match.team1Score}/{match.team1wickets} ({match.team1Overs})
                   </span>
-                  <span className="text-gray-700">{match.team1.score || "Yet to Bat"}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span>
-                    {match.team2.flag} {match.team2.name}
+                  <span>{match.teamEntity2?.name}</span>
+                  <span className="text-gray-700">
+                    {match.team2Score}/{match.team2wickets} ({match.team2Overs})
                   </span>
-                  <span className="text-gray-700">{match.team2.score || "Yet to Bat"}</span>
                 </div>
               </div>
 
@@ -135,7 +118,7 @@ const Matches = () => {
               <div className="mt-3 flex items-center gap-2 text-gray-600 text-sm">
                 <Calendar size={16} />
                 <span>
-                  {match.matchDate} • {match.location}
+                  { match.matchDate.split('T')[0]} • {match.addressEntity?.address2}
                 </span>
               </div>
             </div>

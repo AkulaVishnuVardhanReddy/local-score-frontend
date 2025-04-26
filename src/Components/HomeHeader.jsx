@@ -6,8 +6,8 @@ import axios from "axios";
 const NAV_LINKS = [
   { name: "Home", path: "/" },
   { name: "Matches", path: "/matches" },
-  { name: "Score Update", path: "/score-update" },
-  { name: "Company", path: "/company" },
+  { name: "MyMatches", path: "/view-created-matches" },
+  { name: "CreateTeam", path: "/create-team" },
 ];
 
 const HomeHeader = () => {

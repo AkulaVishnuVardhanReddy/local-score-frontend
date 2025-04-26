@@ -126,7 +126,7 @@ const UpdateScore = ({ isCreator }) => {
 
     try {
       const response = await axios.put(
-        "http://localhost:8080/match/1",
+        `http://localhost:8080/match/${matchId}`,
         updatedFields,
         {
           headers: {
