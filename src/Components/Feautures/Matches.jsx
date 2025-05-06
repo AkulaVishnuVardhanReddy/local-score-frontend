@@ -93,13 +93,13 @@ const Matches = () => {
                 <div className="flex justify-between items-center">
                   <span>{match.teamEntity1?.name}</span>
                   <span className="text-gray-700">
-                    {match.team1Score}/{match.team1wickets} ({match.team1Overs})
+                    {match.team1Score || 0}/{match.team1wickets || 0} ({match.team1Overs || 0})
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span>{match.teamEntity2?.name}</span>
                   <span className="text-gray-700">
-                    {match.team2Score}/{match.team2wickets} ({match.team2Overs})
+                    {match.team2Score || 0}/{match.team2wickets || 0} ({match.team2Overs || 0})
                   </span>
                 </div>
               </div>

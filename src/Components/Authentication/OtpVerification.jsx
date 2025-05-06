@@ -71,7 +71,8 @@ const OtpVerification = () => {
       });
       
       setMessage("OTP Verified Successfully!");
-      console.log("Success:", data);
+      console.log("Success:", response);
+      alert("Your Registration is Successfull!!")
       navigate("/login");
     } catch (error) {
       setMessage(error?.response?.data);

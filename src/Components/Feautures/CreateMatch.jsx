@@ -62,6 +62,7 @@ export default function CreateMatch() {
       }
     };
 
+    console.log("Before")
     fetchTeams();
     fetchAddresses();
   }, []);
@@ -113,10 +114,10 @@ export default function CreateMatch() {
   const handleSubmit = async () => {
     const { name, matchDate, matchTime, totalOvers, team1Id, team2Id, addressId } = form;
 
-    if (!name || !matchDate || !matchTime || !totalOvers || !team1Id || !team2Id || !addressId) {
-      toast.error("Please fill all required fields");
-      return;
-    }
+    // if (!name || !matchDate || !matchTime || !totalOvers || !team1Id || !team2Id || !addressId) {
+    //   toast.error("Please fill all required fields");
+    //   return;
+    // }
 
     const matchDateTime = new Date(`${matchDate}T${matchTime}`);
     if (isNaN(matchDateTime)) {

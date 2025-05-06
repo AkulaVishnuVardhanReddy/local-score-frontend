@@ -119,12 +119,13 @@ const UpdateScore = ({ isCreator }) => {
     e.preventDefault();
     const updatedFields = { ...fields };
     const currentTeam =
-      fields.inningBy == fields.teamEntity1.name ? "team1" : "team2";
+    fields.inningBy == fields.teamEntity1.name ? "team1" : "team2";
     updatedFields[`${currentTeam}Score`] = score.runs;
     updatedFields[`${currentTeam}wickets`] = score.wickets;
     updatedFields[`${currentTeam}Overs`] = score.overs;
 
     try {
+      console.log(updatedFields)
       const response = await axios.put(
         `http://localhost:8080/match/${matchId}`,
         updatedFields,
@@ -252,10 +253,10 @@ const UpdateScore = ({ isCreator }) => {
               label: "Match Status",
               name: "matchStatus",
               options: [
-                { id: "SCHEDULED", name: "Scheduled" },
-                { id: "ONGOING", name: "Ongoing" },
-                { id: "COMPLETED", name: "Completed" },
-                { id: "ABANDONED", name: "Abandoned" },
+                { id: "SCHEDULED", name: "SCHEDULED" },
+                { id: "ONGOING", name: "ONGOING" },
+                { id: "COMPLETED", name: "COMPLETED" },
+                { id: "ABANDONED", name: "ABANDONED" },
               ],
             },
             { label: "Inning By", name: "inningBy", options: teamOptions },
@@ -268,6 +269,7 @@ const UpdateScore = ({ isCreator }) => {
                 name={name}
                 value={ fields[name]}
                 onChange={handleFieldChange}
+                // disabled
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent transition duration-300 ease-in-out"
               >
                 <option value="">Select {label}</option>
