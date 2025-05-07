@@ -28,7 +28,9 @@ export default function CreateMatch() {
   useEffect(() => {
     const fetchTeams = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/get-all-teams`);
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/get-all-teams`
+        );
         const data = await response.json();
         if (data.message === "All teams fetched") {
           const teamsData = data.data.map((team) => ({
@@ -45,7 +47,9 @@ export default function CreateMatch() {
 
     const fetchAddresses = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/address/all`);
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/address/all`
+        );
         const data = await response.json();
         if (data?.data && Array.isArray(data.data)) {
           const addressesData = data.data.map((address) => ({
@@ -62,7 +66,7 @@ export default function CreateMatch() {
       }
     };
 
-    console.log("Before")
+    console.log("Before");
     fetchTeams();
     fetchAddresses();
   }, []);
@@ -112,7 +116,15 @@ export default function CreateMatch() {
   };
 
   const handleSubmit = async () => {
-    const { name, matchDate, matchTime, totalOvers, team1Id, team2Id, addressId } = form;
+    const {
+      name,
+      matchDate,
+      matchTime,
+      totalOvers,
+      team1Id,
+      team2Id,
+      addressId,
+    } = form;
 
     // if (!name || !matchDate || !matchTime || !totalOvers || !team1Id || !team2Id || !addressId) {
     //   toast.error("Please fill all required fields");
@@ -125,6 +137,12 @@ export default function CreateMatch() {
       return;
     }
 
+    const now = new Date();
+    if (matchDateTime < now) {
+      toast.error("Match date and time must be in the future");
+      return;
+    }
+
     const matchPayload = {
       name,
       matchDate: matchDateTime.toISOString(),
@@ -133,20 +151,22 @@ export default function CreateMatch() {
       team2Id,
       addressId,
       ownerId: Number(localStorage.getItem("id")),
-      matchStatus: "SCHEDULED"
+      matchStatus: "SCHEDULED",
     };
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/matches`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(matchPayload),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/matches`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(matchPayload),
+        }
+      );
 
       if (!response.ok) throw new Error("Failed to create match");
-      
 
       toast.success("🏏 Match created successfully!");
       navigate("/view-created-matches");
@@ -169,7 +189,9 @@ export default function CreateMatch() {
           <img src={logo} alt="Local Score Logo" className="h-30 mb-4" />
         </div>
 
-        <h1 className="text-3xl font-semibold text-center text-black mb-4">Create Match</h1>
+        <h1 className="text-3xl font-semibold text-center text-black mb-4">
+          Create Match
+        </h1>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <InputField
@@ -249,7 +271,16 @@ export default function CreateMatch() {
   );
 }
 
-function AutoSuggestInput({ label, name, value, suggestions, onChange, onSelect, placeholder, fullWidth }) {
+function AutoSuggestInput({
+  label,
+  name,
+  value,
+  suggestions,
+  onChange,
+  onSelect,
+  placeholder,
+  fullWidth,
+}) {
   return (
     <div className={`relative ${fullWidth ? "w-full" : ""}`}>
       <label className="block text-gray-700 mb-1 font-medium">{label}</label>

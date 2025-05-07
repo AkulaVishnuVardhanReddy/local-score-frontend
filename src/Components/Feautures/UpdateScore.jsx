@@ -65,11 +65,16 @@ const UpdateScore = ({ isCreator }) => {
 
   const addWicket = () => {
     if (isInningsOver || score.wickets >= 11) return;
-    const updated = { ...score, wickets: score.wickets + 1 };
+    const updatedOvers = updateOvers(score.overs); 
+    const updated = {
+      ...score,
+      wickets: score.wickets + 1,
+      overs: updatedOvers, 
+    };
     setScore(updated);
     checkInningsOver(updated);
   };
-
+  
   const undo = () => {
     if (prevScore) {
       setScore(prevScore);
